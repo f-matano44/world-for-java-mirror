@@ -1,0 +1,14 @@
+image: openjdk:17-jdk-alpine
+
+stages:
+  - build
+
+build_job:
+  stage: build
+  script:
+    - apk update
+    - apk add "apache-ant>1.10"
+    - java -version
+    - ant -version
+    - ant
+    - java -jar build/TestApp.jar test/vaiueo2d.wav output.wav 
