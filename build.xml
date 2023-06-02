@@ -2,7 +2,8 @@
 <!-- 参考資料: https://qiita.com/tarosa0001/items/93c19155bc803f10cea0 -->
 
 <project name="jaworld" default="default" basedir=".">
-
+    <property name="version" value="0.0.1" />
+    <property name="JA-WORLD" value="JA-WORLD" />
 	<!-- configuration -->
 	<property name="conf.encoding" value="UTF-8" />
 	<property name="conf.jdk.version" value="17" />
@@ -61,7 +62,7 @@
 		<echo message="Compress class files to jar" /> 
 		<jar
 			basedir="${target}"
-			destfile="${target}/ja_world.jar"
+			destfile="${target}/${JA-WORLD}_${version}.jar"
 		/>
         <delete dir="${target}/jp" />
 	</target>
@@ -73,7 +74,7 @@
         <unjar dest="${target}/temp">
             <fileset dir=".">
                 <include name="${lib}/jFloatWavIO_1.1.2.jar" />
-                <include name="${target}/ja_world.jar" />
+                <include name="${target}/${JA-WORLD}_${version}.jar" />
             </fileset>
         </unjar>
         <!-- Step 2: Compile TestApp class to the same directory -->
@@ -95,7 +96,6 @@
         </jar>
         <!-- Step 4: Clean up -->
         <delete dir="${target}/temp" />
-        <delete file="${target}/jfloatwavio.jar"/>
     </target>
 
 
