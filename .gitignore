@@ -1,0 +1,13 @@
+# directory
+/bin
+/build
+
+# file extention
+*.csv
+*.wav
+
+# specific dirs/files
+/original_world/
+
+!/**/.gitkeep
+!/**/vaiueo2d.wav
