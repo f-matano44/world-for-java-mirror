@@ -4,14 +4,14 @@ https://github.com/mmorise/World<br>
 JA-WORLD project is unrelated to original.<br>
 
 
-# Development environment
+## Development environment
 * [Java 17 (LTS)](https://adoptium.net/temurin/releases/?version=17)
 * [ant 1.10](https://ant.apache.org/bindownload.cgi)
 * [VSCode](https://code.visualstudio.com/) + [Checkstyle for Java](https://marketplace.visualstudio.com/items?itemName=shengchen.vscode-checkstyle)
 * [chatGPT (GPT-4.0)](https://chat.openai.com/)
 
 
-# Usage
+## Usage
 If you want to use some options, please read `test/TestApp.java`.
 
 ```java
@@ -28,13 +28,23 @@ double[] y = Synthesis.getSignal(f0, sp, ap, fs);
 ```
 
 
-# Build (make jar file to build/ directory)
+## C++ vs Java: Maximum Difference in Computed Values for `test/vaiueo2d.wav`
+
+| Function | Maximum Difference |
+|-----------|------------|
+| Dio | 3.41e-13 |
+| StoneMask | 1.14e-13 |
+| CheapTrick | 4.81e-09 |
+| D4C | 5.00e-10 |
+
+
+## Build (make jar file to build/ directory)
 ```SH
 ja-world/$ ant
 ```
 
 
-# Run test application
+## Run test application
 ```SH
 ja-world/$ ant
 ja-world/$ java -jar bin/TestApp.jar test/vaiueo2d.wav output.wav
