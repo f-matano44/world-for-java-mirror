@@ -38,7 +38,7 @@ double[] y = Synthesis.getSignal(f0, sp, ap, fs);
 | D4C | 5.00e-10 |
 
 
-## Build (make jar file to build/ directory)
+## Build (to build/ directory)
 ```SH
 ja-world/$ ant
 ```
