@@ -32,8 +32,8 @@ double[] y = Synthesis.getSignal(f0, sp, ap, fs);
 
 | Function | Maximum Difference |
 |-----------|------------|
-| Dio | 3.41e-13 |
-| StoneMask | 1.14e-13 |
+| Dio | 4.26e-13 |
+| StoneMask | 5.68e-14 |
 | CheapTrick | 4.81e-09 |
 | D4C | 5.00e-10 |
 

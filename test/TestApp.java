@@ -1,3 +1,13 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import jp.f_matano44.ja_world.CheapTrick;
 import jp.f_matano44.ja_world.D4C;
 import jp.f_matano44.ja_world.Dio;
@@ -142,6 +152,12 @@ public class TestApp {
 
         wp.f0 = refined_f0;
         wp.temporal_positions = temporal_positions;
+
+        // If you want to write out F0 data, uncomment this.
+        //DebugFunc.outputF0Data(wp.temporal_positions,
+        //    f0_Dio, "build/f0Dio_java.csv");
+        //DebugFunc.outputF0Data(wp.temporal_positions,
+        //    wp.f0, "build/f0Stone_java.csv");
     }
 
 
@@ -170,6 +186,9 @@ public class TestApp {
 
         wp.fft_size = option.fft_size;
         wp.spectrogram = sp;
+
+        // If you want to write out F0 data, uncomment this.
+        //DebugFunc.output2dimArray(sp, "build/sp_java.csv");
     }
 
 
@@ -190,6 +209,9 @@ public class TestApp {
         System.out.printf("D4C: %d [msec]\n", System.currentTimeMillis() - elapsed_time);
 
         wp.aperiodicity = ap;
+
+        // If you want to write out F0 data, uncomment this.
+        //DebugFunc.output2dimArray(ap, "build/ap_java.csv");
     }
 
 
@@ -203,5 +225,57 @@ public class TestApp {
         System.out.printf("WORLD: %d [msec]\n", System.currentTimeMillis() - elapsed_time);
 
         return y;
+    }
+
+    private static class DebugFunc {
+        public static void outputF0Data(double[] t, double[] f0, final String filename) {
+            ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Tokyo"));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            String formattedNow = now.format(formatter);
+    
+            try (var pw = new PrintWriter(new FileWriter(filename))) {
+                pw.printf("t,f0,%s\n", formattedNow);
+                for (int i = 0; i < t.length; i++) {
+                    pw.printf("%.3f,%.14f\n", t[i], f0[i]);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        public static void output2dimArray(double[][] array, String filename) {
+            try (PrintWriter writer = new PrintWriter(filename)) {
+                for (double[] row : array) {
+                    for (int i = 0; i < row.length; i++) {
+                        writer.print(row[i]);
+                        if (i != row.length - 1) {
+                            writer.print(",");
+                        }
+                    }
+                    writer.println();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        public static double[][] readCSV(String filename) {
+            ArrayList<double[]> dataList = new ArrayList<>();
+            try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String[] values = line.split(",");
+                    double[] doubleValues = Arrays.stream(values)
+                        .mapToDouble(Double::parseDouble)
+                        .toArray();
+                    dataList.add(doubleValues);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return dataList.toArray(new double[0][]);
+        }
     }
 }
