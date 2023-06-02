@@ -71,7 +71,7 @@ public final class CheapTrick {
         int fft_size = getFFTSizeForCheapTrick(fs, option.f0_floor);
         double[][] sp = new double[f0.length][fft_size / 2 + 1];
 
-        CheapTrickMain(x.clone(), x.length, fs, temporal_positions.clone(),
+        cheapTrickMain(x.clone(), x.length, fs, temporal_positions.clone(),
             f0.clone(), f0.length, option, sp
         );
 
@@ -89,8 +89,8 @@ public final class CheapTrick {
      * @return FFT size
      */
     public static int getFFTSizeForCheapTrick(final int fs, final double f0_floor) {
-        return (int) (Math.pow(2.0, 1.0 +
-            (int) (Math.log(3.0 * fs / f0_floor + 1) / ConstantNumbers.kLog2)));
+        return (int) (Math.pow(2.0,
+            1.0 + (int) (Math.log(3.0 * fs / f0_floor + 1) / ConstantNumbers.kLog2)));
     }
 
 
@@ -114,7 +114,7 @@ public final class CheapTrick {
     // SmoothingWithRecovery() carries out the spectral smoothing and spectral
     // recovery on the Cepstrum domain.
     //-----------------------------------------------------------------------------
-    private static void SmoothingWithRecovery(
+    private static void smoothingWithRecovery(
         double f0, int fs, int fft_size, double q1,
         final Common.ForwardRealFFT forward_real_fft,
         final Common.InverseRealFFT inverse_real_fft, double[] spectral_envelope
@@ -127,27 +127,30 @@ public final class CheapTrick {
         double quefrency;
         for (int i = 1; i <= forward_real_fft.fft_size / 2; ++i) {
             quefrency = (double) (i) / fs;
-            smoothing_lifter[i] = Math.sin(Math.PI * f0 * quefrency) /
-            (Math.PI * f0 * quefrency);
-            compensation_lifter[i] = (1.0 - 2.0 * q1) + 2.0 * q1 *
-            Math.cos(2.0 * Math.PI * quefrency * f0);
+            smoothing_lifter[i] = Math.sin(Math.PI * f0 * quefrency)
+                / (Math.PI * f0 * quefrency);
+            compensation_lifter[i] = (1.0 - 2.0 * q1)
+                + 2.0 * q1 * Math.cos(2.0 * Math.PI * quefrency * f0);
         }
 
-        for (int i = 0; i <= fft_size / 2; ++i)
+        for (int i = 0; i <= fft_size / 2; ++i) {
             forward_real_fft.waveform[i] = Math.log(forward_real_fft.waveform[i]);
-        for (int i = 1; i < fft_size / 2; ++i)
+        }
+        for (int i = 1; i < fft_size / 2; ++i) {
             forward_real_fft.waveform[fft_size - i] = forward_real_fft.waveform[i];
+        }
         Fft.fft_execute(forward_real_fft.forward_fft);
 
         for (int i = 0; i <= fft_size / 2; ++i) {
-            inverse_real_fft.spectrum[i][0] = forward_real_fft.spectrum[i][0] *
-            smoothing_lifter[i] * compensation_lifter[i] / fft_size;
+            inverse_real_fft.spectrum[i][0] = forward_real_fft.spectrum[i][0]
+                * smoothing_lifter[i] * compensation_lifter[i] / fft_size;
             inverse_real_fft.spectrum[i][1] = 0.0;
         }
         Fft.fft_execute(inverse_real_fft.inverse_fft);
 
-        for (int i = 0; i <= fft_size / 2; ++i)
+        for (int i = 0; i <= fft_size / 2; ++i) {
             spectral_envelope[i] = Math.exp(inverse_real_fft.waveform[i]);
+        }
     }
 
 
@@ -156,42 +159,46 @@ public final class CheapTrick {
     // DC stands for Direct Current. In this case, the component from 0 to F0 Hz
     // is corrected.
     //-----------------------------------------------------------------------------
-    private static void GetPowerSpectrum(
+    private static void getPowerSpectrum(
         int fs, double f0, int fft_size,
         final Common.ForwardRealFFT forward_real_fft
     ) {
         int half_window_length = (int) Math.round(1.5 * fs / f0);
 
         // FFT
-        for (int i = half_window_length * 2 + 1; i < fft_size; ++i)
+        for (int i = half_window_length * 2 + 1; i < fft_size; ++i) {
             forward_real_fft.waveform[i] = 0.0;
+        }
         Fft.fft_execute(forward_real_fft.forward_fft);
 
         // Calculation of the power spectrum.
         double[] power_spectrum = forward_real_fft.waveform;
-        for (int i = 0; i <= fft_size / 2; ++i)
+        for (int i = 0; i <= fft_size / 2; ++i) {
             power_spectrum[i] =
                 forward_real_fft.spectrum[i][0] * forward_real_fft.spectrum[i][0]
                 + forward_real_fft.spectrum[i][1] * forward_real_fft.spectrum[i][1];
+        }
 
         // DC correction
-        Common.DCCorrection(power_spectrum, f0, fs, fft_size, power_spectrum);
+        Common.dcCorrection(power_spectrum, f0, fs, fft_size, power_spectrum);
     }
 
 
     //-----------------------------------------------------------------------------
     // SetParametersForGetWindowedWaveform()
     //-----------------------------------------------------------------------------
-    private static void SetParametersForGetWindowedWaveform(int half_window_length,
+    private static void setParametersForGetWindowedWaveform(int half_window_length,
         int x_length, double currnet_position, int fs, double current_f0,
         int[] base_index, int[] safe_index, double[] window
     ) {
-        for (int i = -half_window_length; i <= half_window_length; ++i)
+        for (int i = -half_window_length; i <= half_window_length; ++i) {
             base_index[i + half_window_length] = i;
+        }
         int origin = (int) Math.round(currnet_position * fs + 0.001);
-        for (int i = 0; i <= half_window_length * 2; ++i)
+        for (int i = 0; i <= half_window_length * 2; ++i) {
             safe_index[i] =
-                Common.MyMinInt(x_length - 1, Common.MyMaxInt(0, origin + base_index[i]));
+                Common.myMinInt(x_length - 1, Common.myMaxInt(0, origin + base_index[i]));
+        }
 
         // Designing of the window function
         double average = 0.0;
@@ -202,14 +209,16 @@ public final class CheapTrick {
             average += window[i] * window[i];
         }
         average = Math.sqrt(average);
-        for (int i = 0; i <= half_window_length * 2; ++i) window[i] /= average;
+        for (int i = 0; i <= half_window_length * 2; ++i) {
+            window[i] /= average;
+        }
     }
 
 
     //-----------------------------------------------------------------------------
     // GetWindowedWaveform() windows the waveform by F0-adaptive window
     //-----------------------------------------------------------------------------
-    private static void GetWindowedWaveform(final double[] x, int x_length, int fs,
+    private static void getWindowedWaveform(final double[] x, int x_length, int fs,
         double current_f0, double currnet_position,
         final Common.ForwardRealFFT forward_real_fft, MatlabFunctions.Random random
     ) {
@@ -219,14 +228,15 @@ public final class CheapTrick {
         int[] safe_index = new int[half_window_length * 2 + 1];
         double[] window  = new double[half_window_length * 2 + 1];
 
-        SetParametersForGetWindowedWaveform(half_window_length, x_length,
+        setParametersForGetWindowedWaveform(half_window_length, x_length,
             currnet_position, fs, current_f0, base_index, safe_index, window);
 
         // F0-adaptive windowing
         double[] waveform = forward_real_fft.waveform;
-        for (int i = 0; i <= half_window_length * 2; ++i)
-            waveform[i] = x[safe_index[i]] * window[i] +
-            random.randn() * ConstantNumbers.kMySafeGuardMinimum;
+        for (int i = 0; i <= half_window_length * 2; ++i) {
+            waveform[i] = x[safe_index[i]] * window[i]
+                + random.randn() * ConstantNumbers.kMySafeGuardMinimum;
+        }
         double tmp_weight1 = 0;
         double tmp_weight2 = 0;
         for (int i = 0; i <= half_window_length * 2; ++i) {
@@ -234,21 +244,23 @@ public final class CheapTrick {
             tmp_weight2 += window[i];
         }
         double weighting_coefficient = tmp_weight1 / tmp_weight2;
-        for (int i = 0; i <= half_window_length * 2; ++i)
+        for (int i = 0; i <= half_window_length * 2; ++i) {
             waveform[i] -= window[i] * weighting_coefficient;
+        }
     }
 
 
     //-----------------------------------------------------------------------------
     // AddInfinitesimalNoise()
     //-----------------------------------------------------------------------------
-    private static void AddInfinitesimalNoise(
+    private static void addInfinitesimalNoise(
         final double[] input_spectrum, int fft_size, double[] output_spectrum, 
         MatlabFunctions.Random random
     ) {
-        for (int i = 0; i <= fft_size / 2; ++i)
+        for (int i = 0; i <= fft_size / 2; ++i) {
             output_spectrum[i] = 
                 input_spectrum[i] + Math.abs(random.randn()) * ConstantNumbers.kEps;
+        }
     }
 
 
@@ -258,14 +270,14 @@ public final class CheapTrick {
     // Caution:
     //   forward_fft is allocated in advance to speed up the processing.
     //-----------------------------------------------------------------------------
-    private static void CheapTrickGeneralBody(final double[] x, int x_length, int fs,
+    private static void cheapTrickGeneralBody(final double[] x, int x_length, int fs,
         double current_f0, int fft_size, double current_position, double q1,
         final Common.ForwardRealFFT forward_real_fft,
-        final Common.InverseRealFFT inverse_real_fft, double[] spectral_envelope
-        , MatlabFunctions.Random random
+        final Common.InverseRealFFT inverse_real_fft, double[] spectral_envelope,
+        MatlabFunctions.Random random
     ) {
         // F0-adaptive windowing
-        GetWindowedWaveform(x, x_length, fs, current_f0, current_position,
+        getWindowedWaveform(x, x_length, fs, current_f0, current_position,
             forward_real_fft, random);
 
         // Calculate power spectrum with DC correction
@@ -273,25 +285,25 @@ public final class CheapTrick {
         // In this imprementation, power spectrum is transformed by FFT (NOT IFFT).
         // However, the same result is obtained.
         // This is tricky but important for simple implementation.
-        GetPowerSpectrum(fs, current_f0, fft_size, forward_real_fft);
+        getPowerSpectrum(fs, current_f0, fft_size, forward_real_fft);
 
         // Smoothing of the power (linear axis)
         // forward_real_fft.waveform is the power spectrum.
-        Common.LinearSmoothing(forward_real_fft.waveform, current_f0 * 2.0 / 3.0,
+        Common.linearSmoothing(forward_real_fft.waveform, current_f0 * 2.0 / 3.0,
             fs, fft_size, forward_real_fft.waveform);
 
         // Add infinitesimal noise
         // This is a safeguard to avoid including zero in the spectrum.
-        AddInfinitesimalNoise(forward_real_fft.waveform, fft_size,
+        addInfinitesimalNoise(forward_real_fft.waveform, fft_size,
             forward_real_fft.waveform, random);
 
         // Smoothing (log axis) and spectral recovery on the cepstrum domain.
-        SmoothingWithRecovery(current_f0, fs, fft_size, q1, forward_real_fft,
+        smoothingWithRecovery(current_f0, fs, fft_size, q1, forward_real_fft,
             inverse_real_fft, spectral_envelope);
     }
 
 
-    private static void CheapTrickMain(final double[] x, int x_length, int fs,
+    private static void cheapTrickMain(final double[] x, int x_length, int fs,
         final double[] temporal_positions, final double[] f0, int f0_length,
         final CheapTrick.Option option, double[][] spectrogram
     ) {
@@ -307,22 +319,12 @@ public final class CheapTrick {
         double current_f0;
         for (int i = 0; i < f0_length; ++i) {
             current_f0 = f0[i] <= f0_floor ? ConstantNumbers.kDefaultF0 : f0[i];
-            CheapTrickGeneralBody(x, x_length, fs, current_f0, fft_size,
+            cheapTrickGeneralBody(x, x_length, fs, current_f0, fft_size,
                 temporal_positions[i], option.q1, forward_real_fft,
                 inverse_real_fft, spectral_envelope, random);
-            for (int j = 0; j <= fft_size / 2; ++j)
-            spectrogram[i][j] = spectral_envelope[j];
+            for (int j = 0; j <= fft_size / 2; ++j) {
+                spectrogram[i][j] = spectral_envelope[j];
+            }
         }
     }
-
-    /* void InitializeCheapTrickOption(int fs, CheapTrick.Option option) {
-        // q1 is the parameter used for the spectral recovery.
-        // Since The parameter is optimized, you don't need to change the parameter.
-        option.q1 = -0.15;
-        // f0_floor and fs are used to determine fft_size;
-        // We strongly recommend not to change this value unless you have enough
-        // knowledge of the signal processing in CheapTrick.
-        option.f0_floor = ConstantNumbers.kFloorF0;
-        option.fft_size = GetFFTSizeForCheapTrick(fs, option);
-    } */
 }

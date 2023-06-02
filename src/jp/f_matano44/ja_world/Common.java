@@ -19,26 +19,30 @@ final class Common {
     }
 
 
-    private static void SetParametersForLinearSmoothing(int boundary, int fft_size, int fs,
+    private static void setParametersForLinearSmoothing(int boundary, int fft_size, int fs,
         double width, final double[] power_spectrum, double[] mirroring_spectrum,
         double[] mirroring_segment, double[] frequency_axis
     ) {
-        for (int i = 0; i < boundary; ++i)
+        for (int i = 0; i < boundary; ++i) {
             mirroring_spectrum[i] = power_spectrum[boundary - i];
-        for (int i = boundary; i < fft_size / 2 + boundary; ++i)
+        }
+        for (int i = boundary; i < fft_size / 2 + boundary; ++i) {
             mirroring_spectrum[i] = power_spectrum[i - boundary];
-        for (int i = fft_size / 2 + boundary; i <= fft_size / 2 + boundary * 2; ++i)
+        }
+        for (int i = fft_size / 2 + boundary; i <= fft_size / 2 + boundary * 2; ++i) {
             mirroring_spectrum[i] =
-            power_spectrum[fft_size / 2 - (i - (fft_size / 2 + boundary))];
+                power_spectrum[fft_size / 2 - (i - (fft_size / 2 + boundary))];
+        }
 
         mirroring_segment[0] = mirroring_spectrum[0] * fs / fft_size;
-        for (int i = 1; i < fft_size / 2 + boundary * 2 + 1; ++i)
-            mirroring_segment[i] = mirroring_spectrum[i] * fs / fft_size +
-            mirroring_segment[i - 1];
+        for (int i = 1; i < fft_size / 2 + boundary * 2 + 1; ++i) {
+            mirroring_segment[i] = 
+                mirroring_spectrum[i] * fs / fft_size + mirroring_segment[i - 1];
+        }
 
-        for (int i = 0; i <= fft_size / 2; ++i)
-            frequency_axis[i] = (double) (i) / fft_size * //static_cast<double>(i) / fft_size *
-            fs - width / 2.0;
+        for (int i = 0; i <= fft_size / 2; ++i) {
+            frequency_axis[i] = (double) (i) / fft_size * fs - width / 2.0;
+        }
     }
 
 
@@ -95,7 +99,7 @@ final class Common {
             this.input  = new double[fft_size][2]; /* fft_complex * */ 
             this.output = new double[fft_size][2]; /* fft_complex * */ 
             this.inverse_fft = Fft.fft_plan_dft_1d(fft_size,
-            this.input, this.output,Fft.FFT_BACKWARD, Fft.FFT_ESTIMATE);
+            this.input, this.output, Fft.FFT_BACKWARD, Fft.FFT_ESTIMATE);
         }
     }
 
@@ -134,7 +138,7 @@ final class Common {
     // Output:
     //   Suitable FFT size
     //-----------------------------------------------------------------------------
-    static int GetSuitableFFTSize(int sample) {
+    static int getSuitableFFTSize(int sample) {
         return (int) (Math.pow(2.0,
         (int) (Math.log((double) (sample)) / ConstantNumbers.kLog2) + 1.0));
         // return static_cast<int>(pow(2.0,
@@ -146,19 +150,19 @@ final class Common {
     // These four functions are simple max() and min() function
     // for "int" and "double" type.
     //-----------------------------------------------------------------------------
-    static int MyMaxInt(int x, int y) {
+    static int myMaxInt(int x, int y) {
         return x > y ? x : y;
     }
     
-    static double MyMaxDouble(double x, double y) {
+    static double myMaxDouble(double x, double y) {
         return x > y ? x : y;
     }
     
-    static int MyMinInt(int x, int y) {
+    static int myMinInt(int x, int y) {
         return x < y ? x : y;
     }
     
-    static double MyMinDouble(double x, double y) {
+    static double myMinDouble(double x, double y) {
         return x < y ? x : y;
     }
     //-----------------------------------------------------------------------------
@@ -169,15 +173,16 @@ final class Common {
     // DCCorrection interpolates the power under f0 Hz
     // and is used in CheapTrick() and D4C().
     //-----------------------------------------------------------------------------
-    static void DCCorrection(
+    static void dcCorrection(
         final double[] input, double f0, int fs, int fft_size, double[] output
     ) {
         int upper_limit = 2 + /* static_cast<int> */ (int) (f0 * fft_size / fs);
         double[] low_frequency_replica = new double[upper_limit];
         double[] low_frequency_axis = new double[upper_limit];
         
-        for (int i = 0; i < upper_limit; ++i)
-            low_frequency_axis[i] = /* static_cast<double> */ (double) (i) * fs / fft_size;
+        for (int i = 0; i < upper_limit; ++i) {
+            low_frequency_axis[i] = (double) (i) * fs / fft_size;
+        }
         
         int upper_limit_replica = upper_limit - 1;
 
@@ -185,8 +190,9 @@ final class Common {
             (double) (-1) * (fs) / fft_size, input, upper_limit + 1,
             low_frequency_axis, upper_limit_replica, low_frequency_replica);
         
-        for (int i = 0; i < upper_limit_replica; ++i)
+        for (int i = 0; i < upper_limit_replica; ++i) {
             output[i] = input[i] + low_frequency_replica[i];
+        }
     }
 
 
@@ -194,7 +200,7 @@ final class Common {
     // LinearSmoothing() carries out the spectral smoothing by rectangular window
     // whose length is width Hz and is used in CheapTrick() and D4C().
     //-----------------------------------------------------------------------------
-    static void LinearSmoothing(final double[] input, double width, int fs, int fft_size,
+    static void linearSmoothing(final double[] input, double width, int fs, int fft_size,
         double[] output) {
         int boundary = /* static_cast<int> */ (int) (width * fft_size / fs) + 1;
 
@@ -202,7 +208,7 @@ final class Common {
         double[] mirroring_spectrum = new double[fft_size / 2 + boundary * 2 + 1];
         double[] mirroring_segment = new double[fft_size / 2 + boundary * 2 + 1];
         double[] frequency_axis = new double[fft_size / 2 + 1];
-        SetParametersForLinearSmoothing(boundary, fft_size, fs, width,
+        setParametersForLinearSmoothing(boundary, fft_size, fs, width,
             input, mirroring_spectrum, mirroring_segment, frequency_axis);
         
         double[] low_levels = new double[fft_size / 2 + 1];
@@ -215,14 +221,17 @@ final class Common {
             mirroring_segment, fft_size / 2 + boundary * 2 + 1, frequency_axis,
             fft_size / 2 + 1, low_levels);
         
-        for (int i = 0; i <= fft_size / 2; ++i) frequency_axis[i] += width;
+        for (int i = 0; i <= fft_size / 2; ++i) {
+            frequency_axis[i] += width;
+        }
         
         MatlabFunctions.interp1Q(origin_of_mirroring_axis, discrete_frequency_interval,
             mirroring_segment, fft_size / 2 + boundary * 2 + 1, frequency_axis,
             fft_size / 2 + 1, high_levels);
         
-        for (int i = 0; i <= fft_size / 2; ++i)
+        for (int i = 0; i <= fft_size / 2; ++i) {
             output[i] = (high_levels[i] - low_levels[i]) / width;
+        }
     }
 
 
@@ -230,13 +239,13 @@ final class Common {
     // NuttallWindow() calculates the coefficients of Nuttall window whose length
     // is y_length and is used in Dio(), Harvest() and D4C().
     //-----------------------------------------------------------------------------
-    static void NuttallWindow(int y_length, double[] y) {
+    static void nuttallWindow(int y_length, double[] y) {
         double tmp;
         for (int i = 0; i < y_length; ++i) {
             tmp  = i / (y_length - 1.0);
-            y[i] = 0.355768 - 0.487396 * Math.cos(2.0 * Math.PI * tmp) +
-                0.144232 * Math.cos(4.0 * Math.PI * tmp) -
-                0.012604 * Math.cos(6.0 * Math.PI * tmp);
+            y[i] = 0.355768 - 0.487396 * Math.cos(2.0 * Math.PI * tmp)
+                + 0.144232 * Math.cos(4.0 * Math.PI * tmp)
+                - 0.012604 * Math.cos(6.0 * Math.PI * tmp);
         }
     }
 
@@ -245,17 +254,19 @@ final class Common {
     // GetSafeAperiodicity() limit the range of aperiodicity from 0.001 to
     // 0.999999999999 (1 - world::kMySafeGuardMinimum).
     //-----------------------------------------------------------------------------
-    static double GetSafeAperiodicity(double x) {
-        return MyMaxDouble(0.001, MyMinDouble(0.999999999999, x));
+    static double getSafeAperiodicity(double x) {
+        return myMaxDouble(0.001, myMinDouble(0.999999999999, x));
     }
 
 
-    static void GetMinimumPhaseSpectrum(final MinimumPhaseAnalysis minimum_phase) {
+    static void getMinimumPhaseSpectrum(final MinimumPhaseAnalysis minimum_phase) {
         // Mirroring
         for (int i = minimum_phase.fft_size / 2 + 1;
-            i < minimum_phase.fft_size; ++i)
+            i < minimum_phase.fft_size; ++i
+        ) {
             minimum_phase.log_spectrum[i] =
             minimum_phase.log_spectrum[minimum_phase.fft_size - i];
+        }
 
         // This fft_plan carries out "forward" FFT.
         // To carriy out the Inverse FFT, the sign of imaginary part
@@ -279,14 +290,14 @@ final class Common {
         // Note: This FFT library does not keep the aliasing.
         double tmp;
         for (int i = 0; i <= minimum_phase.fft_size / 2; ++i) {
-            tmp = Math.exp(minimum_phase.minimum_phase_spectrum[i][0] /
-            minimum_phase.fft_size);
-            minimum_phase.minimum_phase_spectrum[i][0] = tmp *
-            Math.cos(minimum_phase.minimum_phase_spectrum[i][1] /
-            minimum_phase.fft_size);
-            minimum_phase.minimum_phase_spectrum[i][1] = tmp *
-            Math.sin(minimum_phase.minimum_phase_spectrum[i][1] /
-            minimum_phase.fft_size);
+            tmp = Math.exp(minimum_phase.minimum_phase_spectrum[i][0]
+                / minimum_phase.fft_size);
+            minimum_phase.minimum_phase_spectrum[i][0] =
+                tmp * Math.cos(minimum_phase.minimum_phase_spectrum[i][1]
+                / minimum_phase.fft_size);
+            minimum_phase.minimum_phase_spectrum[i][1] = 
+                tmp * Math.sin(minimum_phase.minimum_phase_spectrum[i][1]
+                / minimum_phase.fft_size);
         }
     }
 }

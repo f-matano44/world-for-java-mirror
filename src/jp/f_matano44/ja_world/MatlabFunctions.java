@@ -17,7 +17,7 @@ final class MatlabFunctions {
     // FilterForDecimate() calculates the coefficients of low-pass filter and
     // carries out the filtering. This function is only used for decimate().
     //-----------------------------------------------------------------------------
-    static void FilterForDecimate(final double[] x, int x_length, int r, double[] y) {
+    static void filterForDecimate(final double[] x, int x_length, int r, double[] y) {
         // double a[3], b[2];  // filter Coefficients
         double[] a = new double[3];
         double[] b = new double[2];
@@ -168,7 +168,9 @@ final class MatlabFunctions {
 
         for (; i < edges_length; ++i) {
             index[i] = 1;
-            if (edges[i] >= x[0]) break;
+            if (edges[i] >= x[0]) {
+                break;
+            }
         }
 
         for (; i < edges_length; ++i) {
@@ -177,12 +179,15 @@ final class MatlabFunctions {
             } else {
                 index[i--] = count++;
             }
-            if (count == x_length) break;
+            if (count == x_length) {
+                break;
+            }
         }
         count--;
 
-        for (i++; i < edges_length; ++i)
+        for (i++; i < edges_length; ++i) {
             index[i] = count;
+        }
     }
 
 
@@ -206,7 +211,9 @@ final class MatlabFunctions {
         double[] h = new double[x_length - 1];
         int[] k = new int[xi_length];
         
-        for (int i = 0; i < x_length - 1; ++i) h[i] = x[i + 1] - x[i];
+        for (int i = 0; i < x_length - 1; ++i) {
+            h[i] = x[i + 1] - x[i];
+        }
         for (int i = 0; i < xi_length; ++i) {
             k[i] = 0;
         }
@@ -234,29 +241,35 @@ final class MatlabFunctions {
     //-----------------------------------------------------------------------------
     static void decimate(final double[] x, int x_length, int r, double[] y) {
         final int kNFact = 9;
-        double[] tmp1 = new double[x_length + kNFact * 2];
-        double[] tmp2 = new double[x_length + kNFact * 2];
+        final double[] tmp1 = new double[x_length + kNFact * 2];
+        final double[] tmp2 = new double[x_length + kNFact * 2];
 
-        for (int i = 0; i < kNFact; ++i)
+        for (int i = 0; i < kNFact; ++i) {
             tmp1[i] = 2 * x[0] - x[kNFact - i];
-        for (int i = kNFact; i < kNFact + x_length; ++i)
+        }
+        for (int i = kNFact; i < kNFact + x_length; ++i) {
             tmp1[i] = x[i - kNFact];
-        for (int i = kNFact + x_length; i < 2 * kNFact + x_length; ++i)
+        }
+        for (int i = kNFact + x_length; i < 2 * kNFact + x_length; ++i) {
             tmp1[i] = 2 * x[x_length - 1] - x[x_length - 2 - (i - (kNFact + x_length))];
+        }
 
-        FilterForDecimate(tmp1, 2 * kNFact + x_length, r, tmp2);
-        for (int i = 0; i < 2 * kNFact + x_length; ++i)
+        filterForDecimate(tmp1, 2 * kNFact + x_length, r, tmp2);
+        for (int i = 0; i < 2 * kNFact + x_length; ++i) {
             tmp1[i] = tmp2[2 * kNFact + x_length - i - 1];
-        FilterForDecimate(tmp1, 2 * kNFact + x_length, r, tmp2);
-        for (int i = 0; i < 2 * kNFact + x_length; ++i)
+        }
+        filterForDecimate(tmp1, 2 * kNFact + x_length, r, tmp2);
+        for (int i = 0; i < 2 * kNFact + x_length; ++i) {
             tmp1[i] = tmp2[2 * kNFact + x_length - i - 1];
+        }
 
         int nout = (x_length - 1) / r + 1;
         int nbeg = r - r * nout + x_length;
 
         int count = 0;
-        for (int i = nbeg; i < x_length + kNFact; i += r)
+        for (int i = nbeg; i < x_length + kNFact; i += r) {
             y[count++] = tmp1[i + kNFact - 1];
+        }
     }
 
 
@@ -288,7 +301,9 @@ final class MatlabFunctions {
     //   y          : Output signal
     //-----------------------------------------------------------------------------
     static void diff(final double[] x, int x_length, double[] y) {
-        for (int i = 0; i < x_length - 1; ++i) y[i] = x[i + 1] - x[i];
+        for (int i = 0; i < x_length - 1; ++i) {
+            y[i] = x[i + 1] - x[i];
+        }
     }
 
 
@@ -318,7 +333,6 @@ final class MatlabFunctions {
         
         double delta_x = shift;
         for (int i = 0; i < xi_length; ++i) {
-            // xi_base[i] = static_cast<int>((xi[i] - x) / delta_x);
             xi_base[i] = (int) ((xi[i] - x) / delta_x);
             xi_fraction[i] = (xi[i] - x) / delta_x - xi_base[i];
         }

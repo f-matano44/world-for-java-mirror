@@ -120,7 +120,7 @@ public class Synthesis {
                 minimum_phase.log_spectrum[i] = Math.log(spectrum[i]) / 2.0;
             }
         }
-        Common.GetMinimumPhaseSpectrum(minimum_phase);
+        Common.getMinimumPhaseSpectrum(minimum_phase);
 
         for (int i = 0; i <= fft_size / 2; ++i) {
             inverse_real_fft.spectrum[i][0] =
@@ -201,7 +201,7 @@ public class Synthesis {
                 Math.log(spectrum[i] * (1.0 - aperiodic_ratio[i])
                 + ConstantNumbers.kMySafeGuardMinimum) / 2.0;
         }
-        Common.GetMinimumPhaseSpectrum(minimum_phase);
+        Common.getMinimumPhaseSpectrum(minimum_phase);
         
         for (int i = 0; i <= fft_size / 2; ++i) {
             inverse_real_fft.spectrum[i][0] =
@@ -227,9 +227,9 @@ public class Synthesis {
         final double current_time, final double frame_period, final int f0_length,
         final double[][] spectrogram, final int fft_size, final double[] spectral_envelope
     ) {
-        final int current_frame_floor = Common.MyMinInt(f0_length - 1,
+        final int current_frame_floor = Common.myMinInt(f0_length - 1,
             (int) (Math.floor(current_time / frame_period)));
-        final int current_frame_ceil = Common.MyMinInt(f0_length - 1,
+        final int current_frame_ceil = Common.myMinInt(f0_length - 1,
             (int) (Math.ceil(current_time / frame_period)));
         final double interpolation = current_time / frame_period - current_frame_floor;
     
@@ -251,25 +251,25 @@ public class Synthesis {
         int f0_length, final double[][] aperiodicity, int fft_size,
         double[] aperiodic_spectrum
     ) {
-        int current_frame_floor = Common.MyMinInt(f0_length - 1,
+        int current_frame_floor = Common.myMinInt(f0_length - 1,
             (int) (Math.floor(current_time / frame_period)));
-        int current_frame_ceil = Common.MyMinInt(f0_length - 1,
+        int current_frame_ceil = Common.myMinInt(f0_length - 1,
             (int) (Math.ceil(current_time / frame_period)));
         double interpolation = current_time / frame_period - current_frame_floor;
     
         if (current_frame_floor == current_frame_ceil) {
             for (int i = 0; i <= fft_size / 2; ++i) {
                 aperiodic_spectrum[i] = Math.pow(
-                    Common.GetSafeAperiodicity(aperiodicity[current_frame_floor][i]), 
+                    Common.getSafeAperiodicity(aperiodicity[current_frame_floor][i]), 
                     2.0
                     );
             }
         } else {
             for (int i = 0; i <= fft_size / 2; ++i) {
                 aperiodic_spectrum[i] = Math.pow((1.0 - interpolation)
-                    * Common.GetSafeAperiodicity(aperiodicity[current_frame_floor][i])
+                    * Common.getSafeAperiodicity(aperiodicity[current_frame_floor][i])
                     + interpolation
-                    * Common.GetSafeAperiodicity(aperiodicity[current_frame_ceil][i]),
+                    * Common.getSafeAperiodicity(aperiodicity[current_frame_ceil][i]),
                     2.0);
             }
         }
@@ -457,7 +457,7 @@ public class Synthesis {
         frame_period /= 1000.0;
         for (int i = 0; i < number_of_pulses; ++i) {
             final int noise_size = 
-                pulse_locations_index[Common.MyMinInt(number_of_pulses - 1, i + 1)]
+                pulse_locations_index[Common.myMinInt(number_of_pulses - 1, i + 1)]
                 - pulse_locations_index[i];
 
             getOneFrameSegment(interpolated_vuv[pulse_locations_index[i]], noise_size,
@@ -467,8 +467,8 @@ public class Synthesis {
                 impulse_response, random);
 
             final int offset = pulse_locations_index[i] - fft_size / 2 + 1;
-            final int lower_limit = Common.MyMaxInt(0, -offset);
-            final int upper_limit = Common.MyMinInt(fft_size, y_length - offset);
+            final int lower_limit = Common.myMaxInt(0, -offset);
+            final int upper_limit = Common.myMinInt(fft_size, y_length - offset);
             for (int j = lower_limit; j < upper_limit; ++j) {
                 final int index = j + offset;
                 y[index] += impulse_response[j];

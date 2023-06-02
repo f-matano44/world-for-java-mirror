@@ -11,7 +11,7 @@ public class StoneMask {
 
 
     /**
-     * StoneMask() refines the estimated F0 by Dio().
+     * StoneMask() refines the estimated F0 by Dio.
      *
      * @param x Input signal
      * @param fs Sampling frequency
@@ -91,7 +91,7 @@ public class StoneMask {
         int[] index = new int[base_time_length];
 
         for (int i = 0; i < base_time_length; ++i) {
-            index[i] = Common.MyMaxInt(0, Common.MyMinInt(x_length - 1, index_raw[i] - 1));
+            index[i] = Common.myMaxInt(0, Common.myMinInt(x_length - 1, index_raw[i] - 1));
         }
         for (int i = 0; i < base_time_length; ++i) {
             forward_real_fft.waveform[i] = x[index[i]] * main_window[i];
@@ -131,7 +131,7 @@ public class StoneMask {
         double[] instantaneous_frequency_list = new double[number_of_harmonics];
         int index;
         for (int i = 0; i < number_of_harmonics; ++i) {
-            index = Common.MyMinInt(
+            index = Common.myMinInt(
                 (int) Math.round(initial_f0 * fft_size / fs * (i + 1)),
                 fft_size / 2);
             instantaneous_frequency_list[i] =
@@ -175,8 +175,6 @@ public class StoneMask {
         double current_position, double initial_f0, int fft_size,
         double window_length_in_time, final double[] base_time, int base_time_length
     ) {
-        Common.ForwardRealFFT forward_real_fft = new Common.ForwardRealFFT(fft_size);
-
         int[] index_raw = new int[base_time_length];
         double[] main_window = new double[base_time_length];
         double[] diff_window = new double[base_time_length];
@@ -185,6 +183,7 @@ public class StoneMask {
                 window_length_in_time, main_window);
         getDiffWindow(main_window, base_time_length, diff_window);
 
+        Common.ForwardRealFFT forward_real_fft = new Common.ForwardRealFFT(fft_size);
         /* fft_complex * */ double[][] main_spectrum = new double[fft_size][2];
         /* fft_complex * */ double[][] diff_spectrum = new double[fft_size][2];
         getSpectra(x, x_length, fft_size, index_raw, main_window, diff_window,

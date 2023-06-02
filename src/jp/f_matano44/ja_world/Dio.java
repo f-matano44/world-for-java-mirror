@@ -423,7 +423,7 @@ public final class Dio {
         double[] low_pass_filter = new double[fft_size];
         // Nuttall window is used as a low-pass filter.
         // Cutoff frequency depends on the window length.
-        Common.NuttallWindow(half_average_length * 4, low_pass_filter);
+        Common.nuttallWindow(half_average_length * 4, low_pass_filter);
         for (int i = half_average_length * 4; i < fft_size; ++i) {
             low_pass_filter[i] = 0.0;
         }
@@ -707,10 +707,10 @@ public final class Dio {
         }
 
         // normalization
-        int decimation_ratio = Common.MyMaxInt(Common.MyMinInt(speed, 12), 1);
+        int decimation_ratio = Common.myMaxInt(Common.myMinInt(speed, 12), 1);
         int y_length = (1 + (int) (x_length / decimation_ratio));
         double actual_fs = (double) (fs) / decimation_ratio;
-        int fft_size = Common.GetSuitableFFTSize(
+        int fft_size = Common.getSuitableFFTSize(
             y_length + (int) Math.round(actual_fs / ConstantNumbers.kCutOff) * 2
             + 1 + (4 * (int) (1.0 + actual_fs / boundary_f0_list[0] / 2.0)));
 

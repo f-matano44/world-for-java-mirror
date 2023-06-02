@@ -108,14 +108,14 @@ final class Fft {
 
     static void fft_execute(Fft.Plan p) {
         if (p.sign == FFT_FORWARD) {
-            ForwardFFT(p);
+            forwardFFT(p);
         } else {  // ifft
-            BackwardFFT(p);
+            backwardFFT(p);
         }
     }
 
 
-    private static void BackwardFFT(Fft.Plan p) {
+    private static void backwardFFT(Fft.Plan p) {
         if (p.c_out == null) {  // c2r
             p.input[0] = p.c_in[0][0];
             p.input[1] = p.c_in[p.n / 2][0];
@@ -124,8 +124,9 @@ final class Fft {
                 p.input[i * 2 + 1]  = -p.c_in[i][1];
             }
             rdft(p.n, -1, p.input, p.ip, p.w);
-            for (int i = 0; i < p.n; ++i)
+            for (int i = 0; i < p.n; ++i) {
                 p.out[i] = p.input[i] * 2.0;
+            }
         } else {  // c2c
             for (int i = 0; i < p.n; ++i) {
                 p.input[i * 2] = p.c_in[i][0];
@@ -140,10 +141,11 @@ final class Fft {
     }
 
 
-    private static void ForwardFFT(Fft.Plan p) {
+    private static void forwardFFT(Fft.Plan p) {
         if (p.c_in == null) {  // r2c
-            for (int i = 0; i < p.n; ++i)
+            for (int i = 0; i < p.n; ++i) {
                 p.input[i] = p.in[i];
+            }
             rdft(p.n, 1, p.input, p.ip, p.w);
             p.c_out[0][0] = p.input[0];
             p.c_out[0][1] = 0.0;
@@ -219,7 +221,6 @@ final class Fft {
 
 
     private static void makewt(int nw, int[] ip, double[] w) {
-        // void makeipt(int nw, int *ip);
         int j, nwh, nw0, nw1;
         double delta, wn4r, wk1r, wk1i, wk3r, wk3i;
 

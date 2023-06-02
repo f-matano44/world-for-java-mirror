@@ -28,7 +28,7 @@ double[] y = Synthesis.getSignal(f0, sp, ap, fs);
 ```
 
 
-## Numerical Calculation Error Between C++ and Java Implementations for `test/vaiueo2d.wav`
+## Calculation Error Between C++(original) and Java Implementations for `test/vaiueo2d.wav`
 
 | Function | Maximum Difference |
 |-----------|------------|
