@@ -27,14 +27,30 @@ import jp.f_matano44.jfloatwavio.WavIO;
 public class TestApp {
     /** Test code. */
     public static void main(String[] args) {
+        final int argc = args.length;
+        if (argc != 1 && argc != 2) {
+            System.out.println("error");
+            System.exit(-1);
+        }
+
         final String inputFilename = args[0];
-        final String outputFilename = args[1];
+        final String outputFilename;
+        if (argc < 2) {
+            outputFilename = "output.wav";
+        } else {
+            outputFilename = args[1];
+        }
 
         final WorldParameters wp = new WorldParameters();
         wp.frame_period = 5.0;
 
         // Load wave file (using jFloatWavIO) ---------------------------------------
-        final double[] x = WavIO.sGetSignal(inputFilename)[0];
+        final double[][] signal = WavIO.sGetSignal(inputFilename);
+        if (signal == null) {
+            System.out.println("error: The file cannot open.");
+            System.exit(-1);
+        }
+        final double[] x = signal[0];
         final int nbits = WavIO.sGetFormat(inputFilename).getSampleSizeInBits();
         wp.fs = (int) WavIO.sGetFormat(inputFilename).getFrameRate();
         displayInformation(x.length, wp.fs, nbits);
@@ -61,6 +77,8 @@ public class TestApp {
         // Synthesis 1 (conventional synthesis)
         double[] y = waveformSynthesis(wp);
         WavIO.sOutputData("01" + outputFilename, nbits, wp.fs, y);
+
+        System.out.println("complete.");
     }
 
     private TestApp() {
@@ -226,6 +244,7 @@ public class TestApp {
 
         return y;
     }
+
 
     private static class DebugFunc {
         public static void outputF0Data(double[] t, double[] f0, final String filename) {
