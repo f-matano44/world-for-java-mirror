@@ -23,18 +23,17 @@ public class TestApp {
         final WorldParameters wp = new WorldParameters();
         wp.frame_period = 5.0;
 
-        /* Load wave file (using jFloatWavIO) */
+        // Load wave file (using jFloatWavIO) ---------------------------------------
         final double[] x = WavIO.sGetSignal(inputFilename)[0];
         final int nbits = WavIO.sGetFormat(inputFilename).getSampleSizeInBits();
         wp.fs = (int) WavIO.sGetFormat(inputFilename).getFrameRate();
         displayInformation(x.length, wp.fs, nbits);
-        /* Load wave file */
 
         // Analysis-Synthesis with no option. ---------------------------------------
         double[] y_NoOption = noOptionSynthesis(x, wp.fs);
         WavIO.sOutputData("00NoOption" + outputFilename, nbits, wp.fs, y_NoOption);
 
-        //---------------------------------------------------------------------------
+        // Analysis part ------------------------------------------------------------
         // F0 estimation (DIO)
         f0EstimationDio(x, wp);
 
@@ -58,11 +57,10 @@ public class TestApp {
         throw new IllegalStateException("TestApp isn't allowed to create instance.");
     }
 
-    /**
-     * struct for WORLD
-     * This struct is an option.
-     * Users are NOT forced to use this struct.
-     */
+
+    // struct for WORLD
+    // This struct is an option.
+    // Users are NOT forced to use this struct.
     private static final class WorldParameters {
         public double frame_period;
         public int fs;
@@ -153,7 +151,7 @@ public class TestApp {
         // Default value was modified to -0.15.
         option.q1 = -0.15;
 
-        // Important notice (2017/01/02)
+        // Important notice
         // You can set the fft_size.
         // Default is GetFFTSizeForCheapTrick(world_parameters.fs, option);
         // When fft_size changes from default value,
@@ -164,7 +162,7 @@ public class TestApp {
         option.fft_size =
             CheapTrick.getFFTSizeForCheapTrick(wp.fs, option.f0_floor);
         // We can directly set fft_size.
-        //option.fft_size = 1024;
+        //   option.fft_size = 1024;
 
         long elapsed_time = System.currentTimeMillis();
         double[][] sp = CheapTrick.estimateSp(x, wp.f0, wp.temporal_positions, wp.fs, option);
