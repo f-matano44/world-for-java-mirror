@@ -8,6 +8,7 @@ public final class CheapTrick {
         throw new IllegalStateException("CheapTrick isn't allowed to create instance.");
     }
 
+
     /** Struct for CheapTrick. */
     public static final class Option {
         public double q1;
@@ -54,13 +55,13 @@ public final class CheapTrick {
     /**
      * CheapTrick() calculates the spectrogram that consists of spectral envelopes
      * estimated by CheapTrick.
-
+     *
      *  @param x                    : Input signal
      *  @param fs                   : Sampling frequency
      *  @param temporal_positions   : Time axis
      *  @param f0                   : F0 contour
      *  @param option               : Struct to order the parameter for CheapTrick
-
+     *
      *  @return double[][]
      *      spectrogram             : Spectrogram estimated by CheapTrick.
      */

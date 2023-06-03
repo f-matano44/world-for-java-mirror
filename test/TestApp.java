@@ -77,7 +77,7 @@ public class TestApp {
         // 1: Conventional synthesis
         //---------------------------------------------------------------------------
         // Synthesis 1 (conventional synthesis)
-        double[] y = waveformSynthesis(wp);
+        final double[] y = waveformSynthesis(wp);
         WavIO.sOutputData("01" + outputFilename, nbits, wp.fs, y);
 
         System.out.println("complete.");
@@ -122,18 +122,17 @@ public class TestApp {
         System.out.println("Analysis & Synthesis with no option.");
         final long elapsed_time = System.currentTimeMillis();
 
-        final double[][] f0Info = Dio.estimateF0(x, fs);
-        final double[] _f0 = f0Info[0];
-        final double[] t = f0Info[1];
+        final double[][] f0_param = Dio.estimateF0(x, fs);
+        final double[] _f0 = f0_param[0];
+        final double[] t = f0_param[1];
         final double[] f0 = StoneMask.refineF0(x, _f0, t, fs);
         final double[][] sp = CheapTrick.estimateSp(x, f0, t, fs);
         final double[][] ap = D4C.estimateAp(x, f0, t, fs);
         final double[] ret = Synthesis.getSignal(f0, sp, ap, fs);
 
-        System.out.printf("A & S with no option : %d [msec]\n",
+        System.out.printf("Time: %d [msec]\n\n",
             System.currentTimeMillis() - elapsed_time
         );
-        System.out.println("");
         return ret;
     }
 
@@ -159,30 +158,36 @@ public class TestApp {
 
         System.out.println("Analysis");
         long elapsed_time = System.currentTimeMillis();
-        final double[][] f0Info = Dio.estimateF0(x, wp.fs, option);
-        System.out.printf("DIO: %d [msec]\n", System.currentTimeMillis() - elapsed_time);
+        final double[][] f0_param = Dio.estimateF0(x, wp.fs, option);
+        System.out.printf("DIO: %d [msec]\n",
+            System.currentTimeMillis() - elapsed_time
+        );
 
-        final double[] dioF0 = f0Info[0];
-        final double[] temporal_positions = f0Info[1];
+        final double[] dioF0 = f0_param[0];
+        final double[] temporal_positions = f0_param[1];
 
         // StoneMask is carried out to improve the estimation performance.
         elapsed_time = System.currentTimeMillis();
         final double[] 
             refinedF0 = StoneMask.refineF0(x, dioF0, temporal_positions, wp.fs);
-        System.out.printf("StoneMask: %d [msec]\n", System.currentTimeMillis() - elapsed_time);
+        System.out.printf("StoneMask: %d [msec]\n",
+            System.currentTimeMillis() - elapsed_time
+        );
 
         wp.f0 = refinedF0;
         wp.temporal_positions = temporal_positions;
 
         // If you want to write out F0 data, uncomment this.
-        //DebugFunc.outputF0Data(wp.temporal_positions,
-        //    f0_Dio, "build/f0Dio_java.csv");
-        //DebugFunc.outputF0Data(wp.temporal_positions,
-        //    wp.f0, "build/f0Stone_java.csv");
+        // DebugFunc.outputF0Data(wp.temporal_positions,
+        //     dioF0, "build/f0Dio_java.csv");
+        // DebugFunc.outputF0Data(wp.temporal_positions,
+        //     wp.f0, "build/f0Stone_java.csv");
     }
 
 
-    private static void spectralEnvelopeEstimation(double[] x, WorldParameters wp) {
+    private static void spectralEnvelopeEstimation(
+        double[] x, WorldParameters wp
+    ) {
         CheapTrick.Option option = new CheapTrick.Option(wp.fs);
 
         // Default value was modified to -0.15.
@@ -202,14 +207,18 @@ public class TestApp {
         //   option.fft_size = 1024;
 
         long elapsed_time = System.currentTimeMillis();
-        double[][] sp = CheapTrick.estimateSp(x, wp.f0, wp.temporal_positions, wp.fs, option);
-        System.out.printf("CheapTrick: %d [msec]\n", System.currentTimeMillis() - elapsed_time);
+        double[][] sp = CheapTrick.estimateSp(
+            x, wp.f0, wp.temporal_positions, wp.fs, option
+        );
+        System.out.printf("CheapTrick: %d [msec]\n",
+            System.currentTimeMillis() - elapsed_time
+        );
 
         wp.fft_size = option.fft_size;
         wp.spectrogram = sp;
 
         // If you want to write out F0 data, uncomment this.
-        //DebugFunc.output2dimArray(sp, "build/sp_java.csv");
+        // DebugFunc.output2dimArray(sp, "build/sp_java.csv");
     }
 
 
@@ -226,13 +235,16 @@ public class TestApp {
 
         long elapsed_time = System.currentTimeMillis();
         double[][] ap = D4C.estimateAp(
-            x, wp.f0, wp.temporal_positions, wp.fs, wp.fft_size, option);
-        System.out.printf("D4C: %d [msec]\n", System.currentTimeMillis() - elapsed_time);
+            x, wp.f0, wp.temporal_positions, wp.fs, option, wp.fft_size
+        );
+        System.out.printf("D4C: %d [msec]\n",
+            System.currentTimeMillis() - elapsed_time
+        );
 
         wp.aperiodicity = ap;
 
         // If you want to write out F0 data, uncomment this.
-        //DebugFunc.output2dimArray(ap, "build/ap_java.csv");
+        // DebugFunc.output2dimArray(ap, "build/ap_java.csv");
     }
 
 
@@ -242,8 +254,11 @@ public class TestApp {
         // Synthesis by the aperiodicity
         long elapsed_time = System.currentTimeMillis();
         double[] y = Synthesis.getSignal(
-            wp.f0, wp.spectrogram, wp.aperiodicity, wp.fs, wp.frame_period);
-        System.out.printf("WORLD: %d [msec]\n", System.currentTimeMillis() - elapsed_time);
+            wp.f0, wp.spectrogram, wp.aperiodicity, wp.fs, wp.frame_period
+        );
+        System.out.printf("WORLD: %d [msec]\n",
+            System.currentTimeMillis() - elapsed_time
+        );
 
         return y;
     }

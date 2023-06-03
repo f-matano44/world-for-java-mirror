@@ -36,12 +36,8 @@ public final class D4C {
     ) {
         int fft_size = CheapTrick.getFFTSizeForCheapTrick(fs, ConstantNumbers.kFloorF0);
         D4C.Option option = new D4C.Option();
-        double[][] ap = new double[f0.length][fft_size / 2 + 1];
-        d4cMain(
-            x.clone(), x.length, fs, temporal_positions.clone(),
-            f0.clone(), f0.length, fft_size, option, ap
-        );
-        return ap;
+
+        return D4C.estimateAp(x, f0, temporal_positions, fs, option, fft_size);
     }
 
 
@@ -52,14 +48,14 @@ public final class D4C {
      * @param f0 F0 contour
      * @param temporal_positions Temporal positions
      * @param fs Sampling rate
-     * @param fft_size CheapTrick.getFFTSizeForCheapTrick(fs, f0_floor)
      * @param option D4C.Option
+     * @param fft_size CheapTrick.getFFTSizeForCheapTrick(fs, f0_floor)
      *
      * @return double[][] Band-aperiodicity
      */
     public static double[][] estimateAp(
         final double[] x, double[] f0, final double[] temporal_positions,
-        final int fs, int fft_size, D4C.Option option
+        final int fs, D4C.Option option, int fft_size
     ) {
         double[][] ap = new double[f0.length][fft_size / 2 + 1];
         d4cMain(
