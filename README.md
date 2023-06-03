@@ -1,5 +1,5 @@
 # JA-WORLD
- | Download | build |
+ | Download | Build status |
  |-----------|-----------|
  | [![Latest Release](https://gitlab.com/f-matano44/world-for-java/-/badges/release.svg)](https://gitlab.com/f-matano44/world-for-java/-/releases) | ![build status](https://gitlab.com/f-matano44/world-for-java/badges/main/pipeline.svg) |
 

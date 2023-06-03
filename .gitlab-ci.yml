@@ -1,0 +1,7 @@
+image: openjdk:17-jdk
+
+before_script:
+  - apt-get update -y && apt-get install -y ant
+
+build:
+  script: ant
