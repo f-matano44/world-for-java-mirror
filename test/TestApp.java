@@ -57,7 +57,11 @@ public class TestApp {
         wp.fs = (int) WavIO.sGetFormat(inputFilename).getFrameRate();
         displayInformation(x.length, wp.fs, nbits);
 
-        // Analysis & Synthesis with no option. ---------------------------------------
+        // Warm-up step -------------------------------------------------------------
+        // Executed to give time for the JVM's JIT compiler to perform optimizations.
+        warmUp(x, wp.fs);
+
+        // Analysis & Synthesis with no option. -------------------------------------
         final double[] y_NoOption = noOptionSynthesis(x, wp.fs);
         WavIO.sOutputData("00NoOption" + outputFilename, nbits, wp.fs, y_NoOption);
 
@@ -115,6 +119,17 @@ public class TestApp {
         System.out.println("Length " + x_length + " [sample]");
         System.out.println("Length " + String.format("%.6f", lengthTime) + " [sec]");
         System.out.println("");
+    }
+
+
+    private static void warmUp(final double[] x, final int fs) {
+        final double[][] f0_param = Dio.estimateF0(x, fs);
+        final double[] _f0 = f0_param[0];
+        final double[] t = f0_param[1];
+        final double[] f0 = StoneMask.refineF0(x, _f0, t, fs);
+        final double[][] sp = CheapTrick.estimateSp(x, f0, t, fs);
+        final double[][] ap = D4C.estimateAp(x, f0, t, fs);
+        final double[] ret = Synthesis.getSignal(f0, sp, ap, fs);
     }
 
 
