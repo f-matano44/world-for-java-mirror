@@ -1,11 +1,14 @@
 # JA-WORLD
-[![Latest Release](https://gitlab.com/f-matano44/world-for-java/-/badges/release.svg)](https://gitlab.com/f-matano44/world-for-java/-/releases) <br>
-This is WORLD that is remake to Java. <br>
+ | Download | build |
+ |-----------|-----------|
+ | [![Latest Release](https://gitlab.com/f-matano44/world-for-java/-/badges/release.svg)](https://gitlab.com/f-matano44/world-for-java/-/releases) | ![build status](https://gitlab.com/f-matano44/world-for-java/badges/main/pipeline.svg) |
+
+
+This is an independent Java port of WORLD vocoder (C++). <br>
 https://github.com/mmorise/World <br>
-JA-WORLD project is unrelated to original. <br>
 
 
-## Development environment
+## Development environment and tools
 * [Java 17 (LTS)](https://adoptium.net/temurin/releases/?version=17)
 * [ant 1.10](https://ant.apache.org/bindownload.cgi)
 * [VSCode](https://code.visualstudio.com/) + [Checkstyle for Java](https://marketplace.visualstudio.com/items?itemName=shengchen.vscode-checkstyle)
@@ -18,9 +21,9 @@ If you want to use some options, please read `test/TestApp.java`.
 ```java
 import jp.f_matano44.ja_world.*;
 
-double[][] f0Info = Dio.estimateF0(x, fs);
-double[] _f0 = f0Info[0];
-double[] t = f0Info[1];
+double[][] f0_parameter = Dio.estimateF0(x, fs);
+double[] _f0 = f0_parameter[0];
+double[] t = f0_parameter[1];
 double[] f0 = StoneMask.refineF0(x, _f0, t, fs);
 double[][] sp = CheapTrick.estimateSp(x, f0, t, fs);
 double[][] ap = D4C.estimateAp(x, f0, t, fs);
