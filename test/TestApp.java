@@ -1,3 +1,4 @@
+// for Debug func
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -8,6 +9,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+// JA-WORLD
 import jp.f_matano44.ja_world.CheapTrick;
 import jp.f_matano44.ja_world.D4C;
 import jp.f_matano44.ja_world.Dio;
@@ -26,13 +28,14 @@ import jp.f_matano44.jfloatwavio.WavIO;
  */
 public class TestApp {
     /** Test code. */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         final int argc = args.length;
         if (argc != 1 && argc != 2) {
             System.out.println("error");
             System.exit(-1);
         }
 
+        // set filename
         final String inputFilename = args[0];
         final String outputFilename;
         if (argc < 2) {
@@ -43,7 +46,6 @@ public class TestApp {
 
         final WorldParameters wp = new WorldParameters();
         wp.frame_period = 5.0;
-
         // Load wave file (using jFloatWavIO) ---------------------------------------
         final double[][] signal = WavIO.sGetSignal(inputFilename);
         if (signal == null) {
@@ -55,8 +57,8 @@ public class TestApp {
         wp.fs = (int) WavIO.sGetFormat(inputFilename).getFrameRate();
         displayInformation(x.length, wp.fs, nbits);
 
-        // Analysis-Synthesis with no option. ---------------------------------------
-        double[] y_NoOption = noOptionSynthesis(x, wp.fs);
+        // Analysis & Synthesis with no option. ---------------------------------------
+        final double[] y_NoOption = noOptionSynthesis(x, wp.fs);
         WavIO.sOutputData("00NoOption" + outputFilename, nbits, wp.fs, y_NoOption);
 
         // Analysis part ------------------------------------------------------------
@@ -80,6 +82,7 @@ public class TestApp {
 
         System.out.println("complete.");
     }
+
 
     private TestApp() {
         throw new IllegalStateException("TestApp isn't allowed to create instance.");
@@ -159,16 +162,16 @@ public class TestApp {
         final double[][] f0Info = Dio.estimateF0(x, wp.fs, option);
         System.out.printf("DIO: %d [msec]\n", System.currentTimeMillis() - elapsed_time);
 
-        final double[] f0_Dio = f0Info[0];
+        final double[] dioF0 = f0Info[0];
         final double[] temporal_positions = f0Info[1];
 
         // StoneMask is carried out to improve the estimation performance.
         elapsed_time = System.currentTimeMillis();
         final double[] 
-            refined_f0 = StoneMask.refineF0(x, f0_Dio, temporal_positions, wp.fs);
+            refinedF0 = StoneMask.refineF0(x, dioF0, temporal_positions, wp.fs);
         System.out.printf("StoneMask: %d [msec]\n", System.currentTimeMillis() - elapsed_time);
 
-        wp.f0 = refined_f0;
+        wp.f0 = refinedF0;
         wp.temporal_positions = temporal_positions;
 
         // If you want to write out F0 data, uncomment this.
@@ -259,6 +262,7 @@ public class TestApp {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                System.exit(-1);
             }
         }
 
@@ -276,6 +280,7 @@ public class TestApp {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                System.exit(-1);
             }
         }
 
@@ -293,6 +298,7 @@ public class TestApp {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                System.exit(-1);
             }
             return dataList.toArray(new double[0][]);
         }
