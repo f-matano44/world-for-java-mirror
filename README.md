@@ -21,6 +21,9 @@ If you want to use some options, please read `test/TestApp.java`.
 ```java
 import jp.f_matano44.ja_world.*;
 
+double[] x = ... ;  // signal
+int fs = ... ;      // sampling rate
+
 double[][] f0_parameter = Dio.estimateF0(x, fs);
 double[] _f0 = f0_parameter[0];
 double[] t = f0_parameter[1];
