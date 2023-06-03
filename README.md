@@ -1,8 +1,7 @@
 # JA-WORLD
  | Download | Build status |
  |-----------|-----------|
- | [![Latest Release](https://gitlab.com/f-matano44/world-for-java/-/badges/release.svg)](https://gitlab.com/f-matano44/world-for-java/-/releases) | [![Build status](https://gitlab.com/f-matano44/world-for-java/badges/main/pipeline.svg)](https://gitlab.com/f-matano44/world-for-java/badges/main)
- |
+ | [![Latest Release](https://gitlab.com/f-matano44/world-for-java/-/badges/release.svg)](https://gitlab.com/f-matano44/world-for-java/-/releases) | [![Build status](https://gitlab.com/f-matano44/world-for-java/badges/main/pipeline.svg)](https://gitlab.com/f-matano44/world-for-java/badges/main) |
 
 
 This is an independent Java port of WORLD vocoder (C++). <br>
