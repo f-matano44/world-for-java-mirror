@@ -5,7 +5,7 @@
 
 
 This is an independent Java port of WORLD vocoder (C++). <br>
-https://github.com/mmorise/World <br>
+[WORLD - a high-quality speech analysis, manipulation and synthesis system](https://github.com/mmorise/World) <br>
 
 
 ## Development environment and tools
