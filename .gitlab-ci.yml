@@ -11,3 +11,4 @@ build_job:
     - java -version
     - ant -version
     - ant
+    - java -jar build/TestApp.jar test/vaiueo2d.wav output.wav 
