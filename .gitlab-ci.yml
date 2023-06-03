@@ -6,6 +6,9 @@ stages:
 build_job:
   stage: build
   script:
+    - java -version
     - apk update
     - apk add "apache-ant>1.10"
+    - java -version
+    - ant -version
     - ant
