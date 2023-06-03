@@ -2,7 +2,7 @@
 <!-- 参考資料: https://qiita.com/tarosa0001/items/93c19155bc803f10cea0 -->
 
 <project name="jaworld" default="default" basedir=".">
-    <property name="version" value="0.0.1" />
+    <property name="version" value="1.0.0" />
     <property name="JA-WORLD" value="JA-WORLD" />
 	<!-- configuration -->
 	<property name="conf.encoding" value="UTF-8" />
