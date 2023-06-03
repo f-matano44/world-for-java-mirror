@@ -1,8 +1,8 @@
 # JA-WORLD
-[![Latest Release](https://gitlab.com/f-matano44/world-for-java/-/badges/release.svg)](https://gitlab.com/f-matano44/world-for-java/-/releases)
-This is WORLD that is remake to Java.<br>
-https://github.com/mmorise/World<br>
-JA-WORLD project is unrelated to original.<br>
+[![Latest Release](https://gitlab.com/f-matano44/world-for-java/-/badges/release.svg)](https://gitlab.com/f-matano44/world-for-java/-/releases) <br>
+This is WORLD that is remake to Java. <br>
+https://github.com/mmorise/World <br>
+JA-WORLD project is unrelated to original. <br>
 
 
 ## Development environment
