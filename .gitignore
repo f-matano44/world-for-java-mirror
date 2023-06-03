@@ -1,6 +1,5 @@
 # directory
-/bin
-/build
+/build/*
 
 # file extention
 *.csv
