@@ -1,7 +1,11 @@
-image: openjdk:17-jdk
+image: openjdk:17-jdk-alpine
 
-before_script:
-  - apt-get update -y && apt-get install -y ant
+stages:
+  - build
 
-build:
-  script: ant
+build_job:
+  stage: build
+  script:
+    - apk update
+    - apk add "apache-ant>1.10"
+    - ant
