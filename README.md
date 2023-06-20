@@ -7,6 +7,9 @@
 This is an independent Java port of WORLD vocoder (C++). <br>
 [WORLD - a high-quality speech analysis, manipulation and synthesis system](https://github.com/mmorise/World) <br>
 
+* JA-WORLD repository: https://gitlab.com/f-matano44/world-for-java
+* mirroring: https://github.com/f-matano44/world-for-java
+
 
 ## Development environment and tools
 * [Java 17 (LTS)](https://adoptium.net/temurin/releases/?version=17)
