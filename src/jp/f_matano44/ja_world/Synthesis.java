@@ -227,9 +227,9 @@ public class Synthesis {
         final double current_time, final double frame_period, final int f0_length,
         final double[][] spectrogram, final int fft_size, final double[] spectral_envelope
     ) {
-        final int current_frame_floor = Common.myMinInt(f0_length - 1,
+        final int current_frame_floor = Math.min(f0_length - 1,
             (int) (Math.floor(current_time / frame_period)));
-        final int current_frame_ceil = Common.myMinInt(f0_length - 1,
+        final int current_frame_ceil = Math.min(f0_length - 1,
             (int) (Math.ceil(current_time / frame_period)));
         final double interpolation = current_time / frame_period - current_frame_floor;
     
@@ -251,9 +251,9 @@ public class Synthesis {
         int f0_length, final double[][] aperiodicity, int fft_size,
         double[] aperiodic_spectrum
     ) {
-        int current_frame_floor = Common.myMinInt(f0_length - 1,
+        int current_frame_floor = Math.min(f0_length - 1,
             (int) (Math.floor(current_time / frame_period)));
-        int current_frame_ceil = Common.myMinInt(f0_length - 1,
+        int current_frame_ceil = Math.min(f0_length - 1,
             (int) (Math.ceil(current_time / frame_period)));
         double interpolation = current_time / frame_period - current_frame_floor;
     
@@ -457,7 +457,7 @@ public class Synthesis {
         frame_period /= 1000.0;
         for (int i = 0; i < number_of_pulses; ++i) {
             final int noise_size = 
-                pulse_locations_index[Common.myMinInt(number_of_pulses - 1, i + 1)]
+                pulse_locations_index[Math.min(number_of_pulses - 1, i + 1)]
                 - pulse_locations_index[i];
 
             getOneFrameSegment(interpolated_vuv[pulse_locations_index[i]], noise_size,
@@ -467,8 +467,8 @@ public class Synthesis {
                 impulse_response, random);
 
             final int offset = pulse_locations_index[i] - fft_size / 2 + 1;
-            final int lower_limit = Common.myMaxInt(0, -offset);
-            final int upper_limit = Common.myMinInt(fft_size, y_length - offset);
+            final int lower_limit = Math.max(0, -offset);
+            final int upper_limit = Math.min(fft_size, y_length - offset);
             for (int j = lower_limit; j < upper_limit; ++j) {
                 final int index = j + offset;
                 y[index] += impulse_response[j];

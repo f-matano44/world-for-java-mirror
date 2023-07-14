@@ -1,14 +1,10 @@
 // for Debug func
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
 // JA-WORLD
 import jp.f_matano44.ja_world.CheapTrick;
 import jp.f_matano44.ja_world.D4C;
@@ -129,7 +125,7 @@ public class TestApp {
         final double[] f0 = StoneMask.refineF0(x, _f0, t, fs);
         final double[][] sp = CheapTrick.estimateSp(x, f0, t, fs);
         final double[][] ap = D4C.estimateAp(x, f0, t, fs);
-        final double[] ret = Synthesis.getSignal(f0, sp, ap, fs);
+        Synthesis.getSignal(f0, sp, ap, fs);
     }
 
 
@@ -192,11 +188,11 @@ public class TestApp {
         wp.f0 = refinedF0;
         wp.temporal_positions = temporal_positions;
 
-        // If you want to write out F0 data, uncomment this.
-        // DebugFunc.outputF0Data(wp.temporal_positions,
-        //     dioF0, "build/f0Dio_java.csv");
-        // DebugFunc.outputF0Data(wp.temporal_positions,
-        //     wp.f0, "build/f0Stone_java.csv");
+        // Write out F0 data
+        DebugFunc.outputF0Data(wp.temporal_positions,
+            dioF0, "build/f0Dio_java.csv");
+        DebugFunc.outputF0Data(wp.temporal_positions,
+            wp.f0, "build/f0Stone_java.csv");
     }
 
 
@@ -232,8 +228,8 @@ public class TestApp {
         wp.fft_size = option.fft_size;
         wp.spectrogram = sp;
 
-        // If you want to write out F0 data, uncomment this.
-        // DebugFunc.output2dimArray(sp, "build/sp_java.csv");
+        // Write out spectrogram data
+        DebugFunc.output2dimArray(sp, "build/sp_java.csv");
     }
 
 
@@ -258,8 +254,8 @@ public class TestApp {
 
         wp.aperiodicity = ap;
 
-        // If you want to write out F0 data, uncomment this.
-        // DebugFunc.output2dimArray(ap, "build/ap_java.csv");
+        // Write out aperiodicity data
+        DebugFunc.output2dimArray(ap, "build/ap_java.csv");
     }
 
 
@@ -312,25 +308,6 @@ public class TestApp {
                 e.printStackTrace();
                 System.exit(-1);
             }
-        }
-
-
-        public static double[][] readCSV(String filename) {
-            ArrayList<double[]> dataList = new ArrayList<>();
-            try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String[] values = line.split(",");
-                    double[] doubleValues = Arrays.stream(values)
-                        .mapToDouble(Double::parseDouble)
-                        .toArray();
-                    dataList.add(doubleValues);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(-1);
-            }
-            return dataList.toArray(new double[0][]);
         }
     }
 }

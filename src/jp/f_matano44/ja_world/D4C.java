@@ -79,8 +79,7 @@ public final class D4C {
         }
         final int origin = (int) Math.round(current_position * fs + 0.001);
         for (int i = 0; i <= half_window_length * 2; ++i) {
-            safe_index[i] =
-                Common.myMinInt(x_length - 1, Common.myMaxInt(0, origin + base_index[i]));
+            safe_index[i] = Common.clamp(origin + base_index[i], 0, x_length - 1);
         }
 
         // Designing of the window function
@@ -366,7 +365,7 @@ public final class D4C {
                 continue;
             }
             aperiodicity0[i] = d4cLoveTrainSub(x, fs, x_length,
-            Common.myMaxDouble(f0[i], lowest_f0), temporal_positions[i], f0_length,
+            Math.max(f0[i], lowest_f0), temporal_positions[i], f0_length,
             fft_size, boundary0, boundary1, boundary2, forward_real_fft, random);
         }
     }
@@ -401,8 +400,8 @@ public final class D4C {
 
         // Revision of the result based on the F0
         for (int i = 0; i < number_of_aperiodicities; ++i) {
-            coarse_aperiodicity[i] = Common.myMinDouble(0.0,
-                coarse_aperiodicity[i] + (current_f0 - 100) / 50.0);
+            coarse_aperiodicity[i] = 
+                Math.min(0.0, coarse_aperiodicity[i] + (current_f0 - 100) / 50.0);
         }
     }
 
@@ -445,7 +444,7 @@ public final class D4C {
         Common.ForwardRealFFT forward_real_fft = new Common.ForwardRealFFT(fft_size_d4c);
 
         int number_of_aperiodicities =
-            (int) (Common.myMinDouble(ConstantNumbers.kUpperLimit,
+            (int) (Math.min(ConstantNumbers.kUpperLimit,
             fs / 2.0 - ConstantNumbers.kFrequencyInterval)
             / ConstantNumbers.kFrequencyInterval);
         // Since the window function is common in D4CGeneralBody(),
@@ -483,7 +482,7 @@ public final class D4C {
 
             double[] caTemp = Arrays.copyOfRange(
                 coarse_aperiodicity, 1, coarse_aperiodicity.length);
-            d4cGeneralBody(x, x_length, fs, Common.myMaxDouble(ConstantNumbers.kFloorF0D4C, f0[i]),
+            d4cGeneralBody(x, x_length, fs, Math.max(ConstantNumbers.kFloorF0D4C, f0[i]),
                 fft_size_d4c, temporal_positions[i], number_of_aperiodicities, window,
                 window_length, forward_real_fft, caTemp /* &coarse_aperiodicity[1] */, random);
             System.arraycopy(caTemp, 0, coarse_aperiodicity, 1, caTemp.length);

@@ -4,11 +4,13 @@ stages:
   - build
 
 build_job:
+  only:
+    - main
   stage: build
   script:
     - apk update
     - apk add "apache-ant>1.10"
     - java -version
     - ant -version
-    - ant
+    - ant buildTestCode
     - java -jar build/TestApp.jar test/vaiueo2d.wav output.wav 

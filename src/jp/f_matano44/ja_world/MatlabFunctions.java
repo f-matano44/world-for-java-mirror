@@ -1,5 +1,7 @@
 package jp.f_matano44.ja_world;
 
+import java.util.Arrays;
+
 /**
  * Matlab functions implemented for WORLD
  * Since these functions are implemented as the same function of Matlab,
@@ -282,10 +284,6 @@ final class MatlabFunctions {
     // Output:
     //   y    : Rounded value
     //-----------------------------------------------------------------------------
-    // static int matlab_round(double x) {
-    //     // return x > 0 ? static_cast<int>(x + 0.5) : static_cast<int>(x - 0.5);
-    //     return x > 0 ? (int) (x + 0.5) : (int) (x - 0.5);
-    // }
     // -> y = (int) Math.round(x)
 
 
@@ -464,11 +462,7 @@ final class MatlabFunctions {
     //   Calculated standard deviation
     //-----------------------------------------------------------------------------
     double matlab_std(final double[] x, int x_length) {
-        double average = 0.0;
-        for (int i = 0; i < x_length; ++i) {
-            average += x[i];
-        }
-        average /= x_length;
+        double average = Arrays.stream(x).average().getAsDouble();
 
         double s = 0.0;
         for (int i = 0; i < x_length; ++i) {

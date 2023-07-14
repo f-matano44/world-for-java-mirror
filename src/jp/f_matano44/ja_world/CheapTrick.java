@@ -197,8 +197,7 @@ public final class CheapTrick {
         }
         int origin = (int) Math.round(currnet_position * fs + 0.001);
         for (int i = 0; i <= half_window_length * 2; ++i) {
-            safe_index[i] =
-                Common.myMinInt(x_length - 1, Common.myMaxInt(0, origin + base_index[i]));
+            safe_index[i] = Common.clamp(origin + base_index[i], 0, x_length - 1);
         }
 
         // Designing of the window function

@@ -141,32 +141,18 @@ final class Common {
     static int getSuitableFFTSize(int sample) {
         return (int) (Math.pow(2.0,
         (int) (Math.log((double) (sample)) / ConstantNumbers.kLog2) + 1.0));
-        // return static_cast<int>(pow(2.0,
-        //     static_cast<int>(log(static_cast<double>(sample)) / world::kLog2) + 1.0));
     }
 
 
-    //-----------------------------------------------------------------------------
-    // These four functions are simple max() and min() function
-    // for "int" and "double" type.
-    //-----------------------------------------------------------------------------
-    static int myMaxInt(int x, int y) {
-        return x > y ? x : y;
+    // Clamps a value between a minimum and maximum value. (int)
+    static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
-    
-    static double myMaxDouble(double x, double y) {
-        return x > y ? x : y;
+
+    // Clamps a value between a minimum and maximum value. (double)
+    static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
     }
-    
-    static int myMinInt(int x, int y) {
-        return x < y ? x : y;
-    }
-    
-    static double myMinDouble(double x, double y) {
-        return x < y ? x : y;
-    }
-    //-----------------------------------------------------------------------------
-    // These functions are used in at least two different .cpp files
 
 
     //-----------------------------------------------------------------------------
@@ -255,7 +241,7 @@ final class Common {
     // 0.999999999999 (1 - world::kMySafeGuardMinimum).
     //-----------------------------------------------------------------------------
     static double getSafeAperiodicity(double x) {
-        return myMaxDouble(0.001, myMinDouble(0.999999999999, x));
+        return clamp(x, 0.001, 0.999999999999);
     }
 
 
