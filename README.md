@@ -23,8 +23,8 @@ Part of JA=WORLD' code and documents are generated using ChatGPT.
 Mozilla Public License 2.0
 
 ### Included Source-code
-WORLD @ Modified-BSD License
-PyWORLD @ MIT License
+* WORLD @ Modified-BSD License
+* PyWORLD @ MIT License
 
 ### test/vaiueo2d.wav
 Got permission to include file from Dr. Morise.
