@@ -1,2 +1,7 @@
+1.0.1
+Modify document
+Modify build.xml; part of ant command has changed
+Optimized code; no functional changes made
+
 1.0.0
 First Release

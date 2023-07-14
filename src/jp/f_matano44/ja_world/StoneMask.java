@@ -85,13 +85,12 @@ public class StoneMask {
         final double[] x, int x_length, int fft_size, final int[] index_raw,
         final double[] main_window, final double[] diff_window, int base_time_length,
         final Common.ForwardRealFFT forward_real_fft,
-        /* fft_complex * */ double[][] main_spectrum,
-        /* fft_complex * */ double[][] diff_spectrum
+        double[][] main_spectrum, double[][] diff_spectrum
     ) {
         int[] index = new int[base_time_length];
 
         for (int i = 0; i < base_time_length; ++i) {
-            index[i] = Common.myMaxInt(0, Common.myMinInt(x_length - 1, index_raw[i] - 1));
+            index[i] = Common.clamp(index_raw[i] - 1, 0, x_length - 1);
         }
         for (int i = 0; i < base_time_length; ++i) {
             forward_real_fft.waveform[i] = x[index[i]] * main_window[i];
@@ -131,7 +130,7 @@ public class StoneMask {
         double[] instantaneous_frequency_list = new double[number_of_harmonics];
         int index;
         for (int i = 0; i < number_of_harmonics; ++i) {
-            index = Common.myMinInt(
+            index = Math.min(
                 (int) Math.round(initial_f0 * fft_size / fs * (i + 1)),
                 fft_size / 2);
             instantaneous_frequency_list[i] =

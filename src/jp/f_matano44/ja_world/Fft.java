@@ -174,8 +174,6 @@ final class Fft {
     // http://www.kurims.kyoto-u.ac.jp/~ooura/index.html
     //-----------------------------------------------------------------------
     private static void cdft(int n, int isgn, double[] a, int[] ip, double[] w) {
-        // void cftfsub(int n, double *a, int *ip, int nw, double *w);
-        // void cftbsub(int n, double *a, int *ip, int nw, double *w);
         int nw;
 
         nw = ip[0];
@@ -188,12 +186,6 @@ final class Fft {
 
 
     private static void rdft(int n, int isgn, double[] a, int[] ip, double[] w) {
-        // void cftfsub(int n, double *a, int *ip, int nw, double *w);
-        // void cftbsub(int n, double *a, int *ip, int nw, double *w);
-        // void rftfsub(int n, double *a, int nc, double *c);
-        // void rftbsub(int n, double *a, int nc, double *c);
-        double xi;
-
         int nw = ip[0];
         int nc = ip[1];
 
@@ -204,7 +196,7 @@ final class Fft {
             } else if (n == 4) {
                 cftfsub(n, a, ip, nw, w);
             }
-            xi = a[0] - a[1];
+            final double xi = a[0] - a[1];
             a[0] += a[1];
             a[1] = xi;
         } else {
@@ -221,8 +213,15 @@ final class Fft {
 
 
     private static void makewt(int nw, int[] ip, double[] w) {
-        int j, nwh, nw0, nw1;
-        double delta, wn4r, wk1r, wk1i, wk3r, wk3i;
+        int nwh;
+        int nw0;
+        int nw1;
+        double delta;
+        double wn4r;
+        double wk1r;
+        double wk1i;
+        double wk3r;
+        double wk3i;
 
         ip[0] = nw;
         ip[1] = 1;
@@ -239,7 +238,7 @@ final class Fft {
                 makeipt(nw, ip);
                 w[2] = 0.5 / Math.cos(delta * 2);
                 w[3] = 0.5 / Math.cos(delta * 6);
-                for (j = 4; j < nwh; j += 4) {
+                for (int j = 4; j < nwh; j += 4) {
                     w[j] = Math.cos(delta * j);
                     w[j + 1] = Math.sin(delta * j);
                     w[j + 2] = Math.cos(3 * delta * j);
@@ -262,7 +261,7 @@ final class Fft {
                     wk3r = w[nw0 + 6];
                     w[nw1 + 2] = 0.5 / wk1r;
                     w[nw1 + 3] = 0.5 / wk3r;
-                    for (j = 4; j < nwh; j += 4) {
+                    for (int j = 4; j < nwh; j += 4) {
                         wk1r = w[nw0 + 2 * j];
                         wk1i = w[nw0 + 2 * j + 1];
                         wk3r = w[nw0 + 2 * j + 2];
@@ -280,16 +279,14 @@ final class Fft {
 
 
     private static void makeipt(int nw, int[] ip) {
-        int j, l, m, m2, p, q;
-
         ip[2] = 0;
         ip[3] = 16;
-        m = 2;
-        for (l = nw; l > 32; l >>= 2) {
-            m2 = m << 1;
-            q = m2 << 3;
-            for (j = m; j < m2; j++) {
-                p = ip[j] << 2;
+        int m = 2;
+        for (int l = nw; l > 32; l >>= 2) {
+            final int m2 = m << 1;
+            final int q = m2 << 3;
+            for (int j = m; j < m2; j++) {
+                int p = ip[j] << 2;
                 ip[m + j] = p;
                 ip[m2 + j] = p + q;
             }
@@ -301,16 +298,13 @@ final class Fft {
     private static void makect(
         int nc, int[] ip, double[] c, int cShift
     ) {
-        int j, nch;
-        double delta;
-
         ip[1] = nc;
         if (nc > 1) {
-            nch = nc >> 1;
-            delta = Math.atan(1.0) / nch;
+            final int nch = nc >> 1;
+            final double delta = Math.atan(1.0) / nch;
             c[cShift + 0] = Math.cos(delta * nch);
             c[cShift + nch] = 0.5 * c[cShift + 0];
-            for (j = 1; j < nch; j++) {
+            for (int j = 1; j < nch; j++) {
                 c[cShift + j] = 0.5 * Math.cos(delta * j);
                 c[cShift + nc - j] = 0.5 * Math.sin(delta * j);
             }
@@ -322,31 +316,18 @@ final class Fft {
 
 
     private static void cftfsub(int n, double[] a, int[] ip, int nw, double[] w) {
-        // void bitrv2(int n, int *ip, double *a);
-        // void bitrv216(double *a);
-        // void bitrv208(double *a);
-        // void cftf1st(int n, double *a, double *w);
-        // void cftrec4(int n, double *a, int nw, double *w);
-        // void cftleaf(int n, int isplt, double *a, int nw, double *w);
-        // void cftfx41(int n, double *a, int nw, double *w);
-        // void cftf161(double *a, double *w);
-        // void cftf081(double *a, double *w);
-        // void cftf040(double *a);
-        // void cftx020(double *a);
-
         if (n > 8) {
             if (n > 32) {
                 cftf1st(n, a, w, nw - (n >> 2));
-            if (n > 512) {
-                cftrec4(n, a, nw, w);
-            } else if (n > 128) {
-                cftleaf(n, 1, a, 0, nw, w);
-            } else {
-                cftfx41(n, a, nw, w);
-            }
+                if (n > 512) {
+                    cftrec4(n, a, nw, w);
+                } else if (n > 128) {
+                    cftleaf(n, 1, a, 0, nw, w);
+                } else {
+                    cftfx41(n, a, nw, w);
+                }
                 bitrv2(n, ip, a);
             } else if (n == 32) {
-                // cftf161(a, &w[nw - 8]);
                 cftf161(a, 0, w, nw - 8);
                 bitrv216(a);
             } else {
@@ -362,18 +343,6 @@ final class Fft {
 
 
     private static void cftbsub(int n, double[] a, int[] ip, int nw, double[] w) {
-        // void bitrv2conj(int n, int *ip, double *a);
-        // void bitrv216neg(double *a);
-        // void bitrv208neg(double *a);
-        // void cftb1st(int n, double *a, double *w);
-        // void cftrec4(int n, double *a, int nw, double *w);
-        // void cftleaf(int n, int isplt, double *a, int nw, double *w);
-        // void cftfx41(int n, double *a, int nw, double *w);
-        // void cftf161(double *a, double *w);
-        // void cftf081(double *a, double *w);
-        // void cftb040(double *a);
-        // void cftx020(double *a);
-
         if (n > 8) {
             if (n > 32) {
                 cftb1st(n, a, w, nw - (n >> 2));
@@ -402,18 +371,25 @@ final class Fft {
 
 
     private static void bitrv2(int n, int[] ip, double[] a) {
-        int j, j1, k, k1, l, m, nh, nm;
-        double xr, xi, yr, yi;
-
-        m = 1;
+        int l;
+        int m = 1;
         for (l = n >> 2; l > 8; l >>= 2) {
             m <<= 1;
         }
+
+        int j1;
+        int k1;
+        int nh;
+        int nm;
+        double xr;
+        double xi;
+        double yr;
+        double yi;
         nh = n >> 1;
         nm = 4 * m;
         if (l == 8) {
-            for (k = 0; k < m; k++) {
-                for (j = 0; j < k; j++) {
+            for (int k = 0; k < m; k++) {
+                for (int j = 0; j < k; j++) {
                     j1 = 4 * j + 2 * ip[m + k];
                     k1 = 4 * k + 2 * ip[m + j];
                     xr = a[j1];
@@ -638,8 +614,8 @@ final class Fft {
                 a[k1 + 1] = xi;
             }
         } else {
-            for (k = 0; k < m; k++) {
-                for (j = 0; j < k; j++) {
+            for (int k = 0; k < m; k++) {
+                for (int j = 0; j < k; j++) {
                     j1 = 4 * j + ip[m + k];
                     k1 = 4 * k + ip[m + j];
                     xr = a[j1];
@@ -748,18 +724,25 @@ final class Fft {
 
 
     private static void bitrv2conj(int n, int[] ip, double[] a) {
-        int j, j1, k, k1, l, m, nh, nm;
-        double xr, xi, yr, yi;
-
-        m = 1;
+        int l;
+        int m = 1;
         for (l = n >> 2; l > 8; l >>= 2) {
             m <<= 1;
         }
+
+        int j1;
+        int k1;
+        int nh;
+        int nm;
+        double xr;
+        double xi;
+        double yr;
+        double yi;
         nh = n >> 1;
         nm = 4 * m;
         if (l == 8) {
-            for (k = 0; k < m; k++) {
-                for (j = 0; j < k; j++) {
+            for (int k = 0; k < m; k++) {
+                for (int j = 0; j < k; j++) {
                     j1 = 4 * j + 2 * ip[m + k];
                     k1 = 4 * k + 2 * ip[m + j];
                     xr = a[j1];
@@ -988,8 +971,8 @@ final class Fft {
                 a[k1 + 3] = -a[k1 + 3];
             }
         } else {
-            for (k = 0; k < m; k++) {
-                for (j = 0; j < k; j++) {
+            for (int k = 0; k < m; k++) {
+                for (int j = 0; j < k; j++) {
                     j1 = 4 * j + ip[m + k];
                     k1 = 4 * k + ip[m + j];
                     xr = a[j1];
@@ -1102,34 +1085,30 @@ final class Fft {
 
 
     private static void bitrv216(double[] a) {
-        double x1r, x1i, x2r, x2i, x3r, x3i, x4r, x4i,
-            x5r, x5i, x7r, x7i, x8r, x8i, x10r, x10i,
-            x11r, x11i, x12r, x12i, x13r, x13i, x14r, x14i;
-
-        x1r = a[2];
-        x1i = a[3];
-        x2r = a[4];
-        x2i = a[5];
-        x3r = a[6];
-        x3i = a[7];
-        x4r = a[8];
-        x4i = a[9];
-        x5r = a[10];
-        x5i = a[11];
-        x7r = a[14];
-        x7i = a[15];
-        x8r = a[16];
-        x8i = a[17];
-        x10r = a[20];
-        x10i = a[21];
-        x11r = a[22];
-        x11i = a[23];
-        x12r = a[24];
-        x12i = a[25];
-        x13r = a[26];
-        x13i = a[27];
-        x14r = a[28];
-        x14i = a[29];
+        final double x1r = a[2];
+        final double x1i = a[3];
+        final double x2r = a[4];
+        final double x2i = a[5];
+        final double x3r = a[6];
+        final double x3i = a[7];
+        final double x4r = a[8];
+        final double x4i = a[9];
+        final double x5r = a[10];
+        final double x5i = a[11];
+        final double x7r = a[14];
+        final double x7i = a[15];
+        final double x8r = a[16];
+        final double x8i = a[17];
+        final double x10r = a[20];
+        final double x10i = a[21];
+        final double x11r = a[22];
+        final double x11i = a[23];
+        final double x12r = a[24];
+        final double x12i = a[25];
+        final double x13r = a[26];
+        final double x13i = a[27];
+        final double x14r = a[28];
+        final double x14i = a[29];
         a[2] = x8r;
         a[3] = x8i;
         a[4] = x4r;
@@ -1158,41 +1137,36 @@ final class Fft {
 
 
     private static void bitrv216neg(double[] a) {
-        double x1r, x1i, x2r, x2i, x3r, x3i, x4r, x4i,
-            x5r, x5i, x6r, x6i, x7r, x7i, x8r, x8i,
-            x9r, x9i, x10r, x10i, x11r, x11i, x12r, x12i,
-            x13r, x13i, x14r, x14i, x15r, x15i;
-
-        x1r = a[2];
-        x1i = a[3];
-        x2r = a[4];
-        x2i = a[5];
-        x3r = a[6];
-        x3i = a[7];
-        x4r = a[8];
-        x4i = a[9];
-        x5r = a[10];
-        x5i = a[11];
-        x6r = a[12];
-        x6i = a[13];
-        x7r = a[14];
-        x7i = a[15];
-        x8r = a[16];
-        x8i = a[17];
-        x9r = a[18];
-        x9i = a[19];
-        x10r = a[20];
-        x10i = a[21];
-        x11r = a[22];
-        x11i = a[23];
-        x12r = a[24];
-        x12i = a[25];
-        x13r = a[26];
-        x13i = a[27];
-        x14r = a[28];
-        x14i = a[29];
-        x15r = a[30];
-        x15i = a[31];
+        final double x1r = a[2];
+        final double x1i = a[3];
+        final double x2r = a[4];
+        final double x2i = a[5];
+        final double x3r = a[6];
+        final double x3i = a[7];
+        final double x4r = a[8];
+        final double x4i = a[9];
+        final double x5r = a[10];
+        final double x5i = a[11];
+        final double x6r = a[12];
+        final double x6i = a[13];
+        final double x7r = a[14];
+        final double x7i = a[15];
+        final double x8r = a[16];
+        final double x8i = a[17];
+        final double x9r = a[18];
+        final double x9i = a[19];
+        final double x10r = a[20];
+        final double x10i = a[21];
+        final double x11r = a[22];
+        final double x11i = a[23];
+        final double x12r = a[24];
+        final double x12i = a[25];
+        final double x13r = a[26];
+        final double x13i = a[27];
+        final double x14r = a[28];
+        final double x14i = a[29];
+        final double x15r = a[30];
+        final double x15i = a[31];
         a[2] = x15r;
         a[3] = x15i;
         a[4] = x7r;
@@ -1227,16 +1201,14 @@ final class Fft {
 
 
     private static void bitrv208(double[] a) {
-        double x1r, x1i, x3r, x3i, x4r, x4i, x6r, x6i;
-
-        x1r = a[2];
-        x1i = a[3];
-        x3r = a[6];
-        x3i = a[7];
-        x4r = a[8];
-        x4i = a[9];
-        x6r = a[12];
-        x6i = a[13];
+        final double x1r = a[2];
+        final double x1i = a[3];
+        final double x3r = a[6];
+        final double x3i = a[7];
+        final double x4r = a[8];
+        final double x4i = a[9];
+        final double x6r = a[12];
+        final double x6i = a[13];
         a[2] = x4r;
         a[3] = x4i;
         a[6] = x6r;
@@ -1249,23 +1221,20 @@ final class Fft {
 
 
     private static void bitrv208neg(double[] a) {
-        double x1r, x1i, x2r, x2i, x3r, x3i, x4r, x4i,
-            x5r, x5i, x6r, x6i, x7r, x7i;
-
-        x1r = a[2];
-        x1i = a[3];
-        x2r = a[4];
-        x2i = a[5];
-        x3r = a[6];
-        x3i = a[7];
-        x4r = a[8];
-        x4i = a[9];
-        x5r = a[10];
-        x5i = a[11];
-        x6r = a[12];
-        x6i = a[13];
-        x7r = a[14];
-        x7i = a[15];
+        final double x1r = a[2];
+        final double x1i = a[3];
+        final double x2r = a[4];
+        final double x2i = a[5];
+        final double x3r = a[6];
+        final double x3i = a[7];
+        final double x4r = a[8];
+        final double x4i = a[9];
+        final double x5r = a[10];
+        final double x5i = a[11];
+        final double x6r = a[12];
+        final double x6i = a[13];
+        final double x7r = a[14];
+        final double x7i = a[15];
         a[2] = x7r;
         a[3] = x7i;
         a[4] = x3r;
@@ -1286,21 +1255,44 @@ final class Fft {
     private static void cftf1st(
         int n, double[] a, double[] w, int wShift
     ) {
-        int j, j0, j1, j2, j3, k, m, mh;
-        double wn4r, csc1, csc3, wk1r, wk1i, wk3r, wk3i,
-            wd1r, wd1i, wd3r, wd3i;
-        double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i,
-            y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i;
+        double wn4r;
+        double csc1;
+        double csc3;
+        double wk1r;
+        double wk1i;
+        double wk3r;
+        double wk3i;
+        double wd1r;
+        double wd1i;
+        double wd3r;
+        double wd3i;
+        double x0r;
+        double x0i;
+        double x1r;
+        double x1i;
+        double x2r;
+        double x2i;
+        double x3r;
+        double x3i;
+        double y0r;
+        double y0i;
+        double y1r;
+        double y1i;
+        double y2r;
+        double y2i;
+        double y3r;
+        double y3i;
 
-        mh = n >> 3;
-        m = 2 * mh;
-        j1 = m;
-        j2 = j1 + m;
-        j3 = j2 + m;
+        final int mh = n >> 3;
+        final int m = 2 * mh;
+        int j0;
+        int j1 = m;
+        int j2 = j1 + m;
         x0r = a[0] + a[j2 + 0];
         x0i = a[1] + a[j2 + 1];
         x1r = a[0] - a[j2 + 0];
         x1i = a[1] - a[j2 + 1];
+        int j3 = j2 + m;
         x2r = a[j1 + 0] + a[j3 + 0];
         x2i = a[j1 + 1] + a[j3 + 1];
         x3r = a[j1 + 0] - a[j3 + 0];
@@ -1320,8 +1312,8 @@ final class Fft {
         wd1i = 0;
         wd3r = 1;
         wd3i = 0;
-        k = 0;
-        for (j = 2; j < mh - 2; j += 4) {
+        int k = 0;
+        for (int j = 2; j < mh - 2; j += 4) {
             k += 4;
             wk1r = csc1 * (wd1r + w[wShift + k + 0]);
             wk1i = csc1 * (wd1i + w[wShift + k + 1]);
@@ -1493,25 +1485,55 @@ final class Fft {
     private static void cftb1st(
         int n, double[] a, double[] w, int wShift
     ) {
-        int j, j0, j1, j2, j3, k, m, mh;
-        double wn4r, csc1, csc3, wk1r, wk1i, wk3r, wk3i,
-            wd1r, wd1i, wd3r, wd3i;
-        double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i,
-            y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i;
+        int j;
+        int j0;
+        int j1;
+        int j2;
+        int j3;
+        int k;
+        int m;
+        int mh;
+        double wn4r;
+        double csc1;
+        double csc3;
+        double wk1r;
+        double wk1i;
+        double wk3r;
+        double wk3i;
+        double wd1r;
+        double wd1i;
+        double wd3r;
+        double wd3i;
+        double x0r;
 
+        double x0i;
+        double x1r;
+        double x1i;
+        double x2r;
+        double x2i;
+        double x3r;
+        double x3i;
+        double y0r;
+        double y0i;
+        double y1r;
+        double y1i;
+        double y2r;
+        double y2i;
+        double y3r;
+        double y3i;
         mh = n >> 3;
         m = 2 * mh;
         j1 = m;
         j2 = j1 + m;
         j3 = j2 + m;
-        x0r =  a[0]      + a[j2 + 0];
-        x0i = -a[1]      - a[j2 + 1];
-        x1r =  a[0]      - a[j2 + 0];
-        x1i = -a[1]      + a[j2 + 1];
-        x2r =  a[j1 + 0] + a[j3 + 0];
-        x2i =  a[j1 + 1] + a[j3 + 1];
-        x3r =  a[j1 + 0] - a[j3 + 0];
-        x3i =  a[j1 + 1] - a[j3 + 1];
+        x0r = a[0] + a[j2 + 0];
+        x0i = -a[1] - a[j2 + 1];
+        x1r = a[0] - a[j2 + 0];
+        x1i = -a[1] + a[j2 + 1];
+        x2r = a[j1 + 0] + a[j3 + 0];
+        x2i = a[j1 + 1] + a[j3 + 1];
+        x3r = a[j1 + 0] - a[j3 + 0];
+        x3i = a[j1 + 1] - a[j3 + 1];
         a[0] = x0r + x2r;
         a[1] = x0i - x2i;
         a[j1 + 0] = x0r - x2r;
@@ -1541,22 +1563,22 @@ final class Fft {
             j1 = j + m;
             j2 = j1 + m;
             j3 = j2 + m;
-            x0r =  a[j + 0] + a[j2 + 0];
+            x0r = a[j + 0] + a[j2 + 0];
             x0i = -a[j + 1] - a[j2 + 1];
-            x1r =  a[j + 0] - a[j2 + 0];
+            x1r = a[j + 0] - a[j2 + 0];
             x1i = -a[j + 1] + a[j2 + 1];
-            y0r =  a[j + 2] + a[j2 + 2];
+            y0r = a[j + 2] + a[j2 + 2];
             y0i = -a[j + 3] - a[j2 + 3];
-            y1r =  a[j + 2] - a[j2 + 2];
+            y1r = a[j + 2] - a[j2 + 2];
             y1i = -a[j + 3] + a[j2 + 3];
-            x2r =  a[j1 + 0] + a[j3 + 0];
-            x2i =  a[j1 + 1] + a[j3 + 1];
-            x3r =  a[j1 + 0] - a[j3 + 0];
-            x3i =  a[j1 + 1] - a[j3 + 1];
-            y2r =  a[j1 + 2] + a[j3 + 2];
-            y2i =  a[j1 + 3] + a[j3 + 3];
-            y3r =  a[j1 + 2] - a[j3 + 2];
-            y3i =  a[j1 + 3] - a[j3 + 3];
+            x2r = a[j1 + 0] + a[j3 + 0];
+            x2i = a[j1 + 1] + a[j3 + 1];
+            x3r = a[j1 + 0] - a[j3 + 0];
+            x3i = a[j1 + 1] - a[j3 + 1];
+            y2r = a[j1 + 2] + a[j3 + 2];
+            y2i = a[j1 + 3] + a[j3 + 3];
+            y3r = a[j1 + 2] - a[j3 + 2];
+            y3i = a[j1 + 3] - a[j3 + 3];
             a[j + 0] = x0r + x2r;
             a[j + 1] = x0i - x2i;
             a[j + 2] = y0r + y2r;
@@ -1585,22 +1607,22 @@ final class Fft {
             j1 = j0 + m;
             j2 = j1 + m;
             j3 = j2 + m;
-            x0r =  a[j0 + 0] + a[j2 + 0];
+            x0r = a[j0 + 0] + a[j2 + 0];
             x0i = -a[j0 + 1] - a[j2 + 1];
-            x1r =  a[j0] - a[j2];
+            x1r = a[j0] - a[j2];
             x1i = -a[j0 + 1] + a[j2 + 1];
-            y0r =  a[j0 - 2] + a[j2 - 2];
+            y0r = a[j0 - 2] + a[j2 - 2];
             y0i = -a[j0 - 1] - a[j2 - 1];
-            y1r =  a[j0 - 2] - a[j2 - 2];
+            y1r = a[j0 - 2] - a[j2 - 2];
             y1i = -a[j0 - 1] + a[j2 - 1];
-            x2r =  a[j1 + 0] + a[j3 + 0];
-            x2i =  a[j1 + 1] + a[j3 + 1];
-            x3r =  a[j1 + 0] - a[j3 + 0];
-            x3i =  a[j1 + 1] - a[j3 + 1];
-            y2r =  a[j1 - 2] + a[j3 - 2];
-            y2i =  a[j1 - 1] + a[j3 - 1];
-            y3r =  a[j1 - 2] - a[j3 - 2];
-            y3i =  a[j1 - 1] - a[j3 - 1];
+            x2r = a[j1 + 0] + a[j3 + 0];
+            x2i = a[j1 + 1] + a[j3 + 1];
+            x3r = a[j1 + 0] - a[j3 + 0];
+            x3i = a[j1 + 1] - a[j3 + 1];
+            y2r = a[j1 - 2] + a[j3 - 2];
+            y2i = a[j1 - 1] + a[j3 - 1];
+            y3r = a[j1 - 2] - a[j3 - 2];
+            y3i = a[j1 - 1] - a[j3 - 1];
             a[j0 + 0] = x0r + x2r;
             a[j0 + 1] = x0i - x2i;
             a[j0 - 2] = y0r + y2r;
@@ -1634,14 +1656,14 @@ final class Fft {
         j1 = j0 + m;
         j2 = j1 + m;
         j3 = j2 + m;
-        x0r =  a[j0 - 2] + a[j2 - 2];
+        x0r = a[j0 - 2] + a[j2 - 2];
         x0i = -a[j0 - 1] - a[j2 - 1];
-        x1r =  a[j0 - 2] - a[j2 - 2];
+        x1r = a[j0 - 2] - a[j2 - 2];
         x1i = -a[j0 - 1] + a[j2 - 1];
-        x2r =  a[j1 - 2] + a[j3 - 2];
-        x2i =  a[j1 - 1] + a[j3 - 1];
-        x3r =  a[j1 - 2] - a[j3 - 2];
-        x3i =  a[j1 - 1] - a[j3 - 1];
+        x2r = a[j1 - 2] + a[j3 - 2];
+        x2i = a[j1 - 1] + a[j3 - 1];
+        x3r = a[j1 - 2] - a[j3 - 2];
+        x3i = a[j1 - 1] - a[j3 - 1];
         a[j0 - 2] = x0r + x2r;
         a[j0 - 1] = x0i - x2i;
         a[j1 - 2] = x0r - x2r;
@@ -1654,14 +1676,14 @@ final class Fft {
         x0i = x1i - x3r;
         a[j3 - 2] = wk3r * x0r + wk3i * x0i;
         a[j3 - 1] = wk3r * x0i - wk3i * x0r;
-        x0r =  a[j0 + 0] + a[j2 + 0];
+        x0r = a[j0 + 0] + a[j2 + 0];
         x0i = -a[j0 + 1] - a[j2 + 1];
-        x1r =  a[j0 + 0] - a[j2 + 0];
+        x1r = a[j0 + 0] - a[j2 + 0];
         x1i = -a[j0 + 1] + a[j2 + 1];
-        x2r =  a[j1 + 0] + a[j3 + 0];
-        x2i =  a[j1 + 1] + a[j3 + 1];
-        x3r =  a[j1 + 0] - a[j3 + 0];
-        x3i =  a[j1 + 1] - a[j3 + 1];
+        x2r = a[j1 + 0] + a[j3 + 0];
+        x2i = a[j1 + 1] + a[j3 + 1];
+        x3r = a[j1 + 0] - a[j3 + 0];
+        x3i = a[j1 + 1] - a[j3 + 1];
         a[j0 + 0] = x0r + x2r;
         a[j0 + 1] = x0i - x2i;
         a[j1 + 0] = x0r - x2r;
@@ -1674,14 +1696,14 @@ final class Fft {
         x0i = x1i - x3r;
         a[j3 + 0] = -wn4r * (x0r + x0i);
         a[j3 + 1] = -wn4r * (x0i - x0r);
-        x0r =  a[j0 + 2] + a[j2 + 2];
+        x0r = a[j0 + 2] + a[j2 + 2];
         x0i = -a[j0 + 3] - a[j2 + 3];
-        x1r =  a[j0 + 2] - a[j2 + 2];
+        x1r = a[j0 + 2] - a[j2 + 2];
         x1i = -a[j0 + 3] + a[j2 + 3];
-        x2r =  a[j1 + 2] + a[j3 + 2];
-        x2i =  a[j1 + 3] + a[j3 + 3];
-        x3r =  a[j1 + 2] - a[j3 + 2];
-        x3i =  a[j1 + 3] - a[j3 + 3];
+        x2r = a[j1 + 2] + a[j3 + 2];
+        x2i = a[j1 + 3] + a[j3 + 3];
+        x3r = a[j1 + 2] - a[j3 + 2];
+        x3i = a[j1 + 3] - a[j3 + 3];
         a[j0 + 2] = x0r + x2r;
         a[j0 + 3] = x0i - x2i;
         a[j1 + 2] = x0r - x2r;
@@ -1698,23 +1720,17 @@ final class Fft {
 
 
     private static void cftrec4(int n, double[] a, int nw, double[] w) {
-        // int cfttree(int n, int j, int k, double *a, int nw, double *w);
-        // void cftleaf(int n, int isplt, double *a, int nw, double *w);
-        // void cftmdl1(int n, double *a, double *w);
-        int isplt, j, k, m;
-
-        m = n;
+        int m = n;
         while (m > 512) {
             m >>= 2;
             cftmdl1(m, a, n - m, w, nw - (m >> 1));
         }
-        // cftleaf(m, 1, &a[n - m], nw, w);
         cftleaf(m, 1, a, n - m, nw, w);
-        k = 0;
-        for (j = n - m; j > 0; j -= m) {
+        int k = 0;
+        for (int j = n - m; j > 0; j -= m) {
             k++;
-            isplt = cfttree(m, j, k, a, nw, w);
-            cftleaf(m, isplt, a, j - m, nw, w); //* 遅い *//
+            int isplt = cfttree(m, j, k, a, nw, w);
+            cftleaf(m, isplt, a, j - m, nw, w); // * 遅い *//
         }
     }
 
@@ -1722,8 +1738,9 @@ final class Fft {
     private static int cfttree(
         int n, int j, int k, double[] a, int nw, double[] w
     ) {
-        int i, isplt, m;
-
+        int i;
+        int isplt;
+        int m;
         if ((k & 3) != 0) {
             isplt = k & 1;
             if (isplt != 0) {
@@ -1759,7 +1776,7 @@ final class Fft {
         if (n == 512) {
             final int cftN = 128;
             cftmdl1(cftN, a, aShift, w, nw - 64);
-            cftf161(a, aShift + 0, w, nw - 8);  
+            cftf161(a, aShift + 0, w, nw - 8);
             cftf162(a, aShift + 32, w, nw - 32);
             cftf161(a, aShift + 64, w, nw - 8);
             cftf161(a, aShift + 96, w, nw - 8);
@@ -1817,51 +1834,69 @@ final class Fft {
     private static void cftmdl1(
         int n, double[] a, int aShift, double[] w, int wShift
     ) {
-        int j, j0, j1, j2, j3, k, m, mh;
-        double wn4r, wk1r, wk1i, wk3r, wk3i;
-        double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i;
+        int j;
+        int j0;
+        int j1;
+        int j2;
+        int j3;
+        int k;
+        int m;
+        int mh;
+        double wn4r;
+        double wk1r;
+        double wk1i;
+        double wk3r;
+        double wk3i;
+        double x0r;
 
-        mh  = n >> 3;
-        m   = 2 * mh;
-        j1  = m;
-        j2  = j1 + m;
-        j3  = j2 + m;
-        x0r = a[aShift + 0]      + a[aShift + j2];
-        x0i = a[aShift + 1]      + a[aShift + j2 + 1];
-        x1r = a[aShift + 0]      - a[aShift + j2];
-        x1i = a[aShift + 1]      - a[aShift + j2 + 1];
-        x2r = a[aShift + j1]     + a[aShift + j3];
+        double x0i;
+        double x1r;
+        double x1i;
+        double x2r;
+        double x2i;
+        double x3r;
+        double x3i;
+        mh = n >> 3;
+        m = 2 * mh;
+        j1 = m;
+        j2 = j1 + m;
+        j3 = j2 + m;
+        x0r = a[aShift + 0] + a[aShift + j2];
+        x0i = a[aShift + 1] + a[aShift + j2 + 1];
+        x1r = a[aShift + 0] - a[aShift + j2];
+        x1i = a[aShift + 1] - a[aShift + j2 + 1];
+        x2r = a[aShift + j1] + a[aShift + j3];
         x2i = a[aShift + j1 + 1] + a[aShift + j3 + 1];
-        x3r = a[aShift + j1]     - a[aShift + j3];
+        x3r = a[aShift + j1] - a[aShift + j3];
         x3i = a[aShift + j1 + 1] - a[aShift + j3 + 1];
-        a[aShift + 0]      = x0r + x2r;
-        a[aShift + 1]      = x0i + x2i;
-        a[aShift + j1]     = x0r - x2r;
+        a[aShift + 0] = x0r + x2r;
+        a[aShift + 1] = x0i + x2i;
+        a[aShift + j1] = x0r - x2r;
         a[aShift + j1 + 1] = x0i - x2i;
-        a[aShift + j2]     = x1r - x3i;
+        a[aShift + j2] = x1r - x3i;
         a[aShift + j2 + 1] = x1i + x3r;
-        a[aShift + j3]     = x1r + x3i;
+        a[aShift + j3] = x1r + x3i;
         a[aShift + j3 + 1] = x1i - x3r;
         wn4r = w[wShift + 1];
 
         k = 0;
         for (j = 2; j < mh; j += 2) {
-            k    += 4;
+            k += 4;
             wk1r = w[wShift + k + 0];
             wk1i = w[wShift + k + 1];
             wk3r = w[wShift + k + 2];
             wk3i = w[wShift + k + 3];
-            j1   = j + m;
-            j2   = j1 + m;
-            j3   = j2 + m;
-            x0r  = a[aShift + j + 0]  + a[aShift + j2 + 0];
-            x0i  = a[aShift + j + 1]  + a[aShift + j2 + 1];
-            x1r  = a[aShift + j + 0]  - a[aShift + j2 + 0];
-            x1i  = a[aShift + j + 1]  - a[aShift + j2 + 1];
-            x2r  = a[aShift + j1 + 0] + a[aShift + j3 + 0];
-            x2i  = a[aShift + j1 + 1] + a[aShift + j3 + 1];
-            x3r  = a[aShift + j1 + 0] - a[aShift + j3 + 0];
-            x3i  = a[aShift + j1 + 1] - a[aShift + j3 + 1];
+            j1 = j + m;
+            j2 = j1 + m;
+            j3 = j2 + m;
+            x0r = a[aShift + j + 0] + a[aShift + j2 + 0];
+            x0i = a[aShift + j + 1] + a[aShift + j2 + 1];
+            x1r = a[aShift + j + 0] - a[aShift + j2 + 0];
+            x1i = a[aShift + j + 1] - a[aShift + j2 + 1];
+            x2r = a[aShift + j1 + 0] + a[aShift + j3 + 0];
+            x2i = a[aShift + j1 + 1] + a[aShift + j3 + 1];
+            x3r = a[aShift + j1 + 0] - a[aShift + j3 + 0];
+            x3i = a[aShift + j1 + 1] - a[aShift + j3 + 1];
             a[aShift + j + 0] = x0r + x2r;
             a[aShift + j + 1] = x0i + x2i;
             a[aShift + j1 + 0] = x0r - x2r;
@@ -1899,10 +1934,10 @@ final class Fft {
             a[aShift + j3 + 0] = wk3i * x0r + wk3r * x0i;
             a[aShift + j3 + 1] = wk3i * x0i - wk3r * x0r;
         }
-        j0  = mh;
-        j1  = j0 + m;
-        j2  = j1 + m;
-        j3  = j2 + m;
+        j0 = mh;
+        j1 = j0 + m;
+        j2 = j1 + m;
+        j3 = j2 + m;
         x0r = a[aShift + j0 + 0] + a[aShift + j2];
         x0i = a[aShift + j0 + 1] + a[aShift + j2 + 1];
         x1r = a[aShift + j0 + 0] - a[aShift + j2];
@@ -1929,28 +1964,56 @@ final class Fft {
     private static void cftmdl2(
         int n, double[] a, int aShift, double[] w, int wShift
     ) {
-        int j, j0, j1, j2, j3, k, kr, m, mh;
-        double wn4r, wk1r, wk1i, wk3r, wk3i, wd1r, wd1i, wd3r, wd3i;
-        double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i, y0r, y0i, y2r, y2i;
-        
+        int j;
+        int j0;
+        int j1;
+        int j2;
+        int j3;
+        int k;
+        int kr;
+        int m;
+        int mh;
+
+        double wn4r;
+        double wk1r;
+        double wk1i;
+        double wk3r;
+        double wk3i;
+        double wd1r;
+        double wd1i;
+        double wd3r;
+        double wd3i;
+        double x0r;
+        double x0i;
+        double x1r;
+        double x1i;
+        double x2r;
+        double x2i;
+        double x3r;
+        double x3i;
+        double y0r;
+        double y0i;
+        double y2r;
+        double y2i;
+
         mh = n >> 3;
         m = 2 * mh;
         wn4r = w[wShift + 1];
         j1 = m;
         j2 = j1 + m;
         j3 = j2 + m;
-        x0r = a[aShift + 0]      - a[aShift + j2 + 1];
-        x0i = a[aShift + 1]      + a[aShift + j2];
-        x1r = a[aShift + 0]      + a[aShift + j2 + 1];
-        x1i = a[aShift + 1]      - a[aShift + j2];
+        x0r = a[aShift + 0] - a[aShift + j2 + 1];
+        x0i = a[aShift + 1] + a[aShift + j2];
+        x1r = a[aShift + 0] + a[aShift + j2 + 1];
+        x1i = a[aShift + 1] - a[aShift + j2];
         x2r = a[aShift + j1 + 0] - a[aShift + j3 + 1];
         x2i = a[aShift + j1 + 1] + a[aShift + j3];
         x3r = a[aShift + j1 + 0] + a[aShift + j3 + 1];
         x3i = a[aShift + j1 + 1] - a[aShift + j3];
         y0r = wn4r * (x2r - x2i);
         y0i = wn4r * (x2i + x2r);
-        a[aShift + 0]      = x0r + y0r;
-        a[aShift + 1]      = x0i + y0i;
+        a[aShift + 0] = x0r + y0r;
+        a[aShift + 1] = x0i + y0i;
         a[aShift + j1 + 0] = x0r - y0r;
         a[aShift + j1 + 1] = x0i - y0i;
         y0r = wn4r * (x3r - x3i);
@@ -1975,10 +2038,10 @@ final class Fft {
             j1 = j + m;
             j2 = j1 + m;
             j3 = j2 + m;
-            x0r = a[aShift + j + 0]  - a[aShift + j2 + 1];
-            x0i = a[aShift + j + 1]  + a[aShift + j2 + 0];
-            x1r = a[aShift + j + 0]  + a[aShift + j2 + 1];
-            x1i = a[aShift + j + 1]  - a[aShift + j2 + 0];
+            x0r = a[aShift + j + 0] - a[aShift + j2 + 1];
+            x0i = a[aShift + j + 1] + a[aShift + j2 + 0];
+            x1r = a[aShift + j + 0] + a[aShift + j2 + 1];
+            x1i = a[aShift + j + 1] - a[aShift + j2 + 0];
             x2r = a[aShift + j1 + 0] - a[aShift + j3 + 1];
             x2i = a[aShift + j1 + 1] + a[aShift + j3 + 0];
             x3r = a[aShift + j1 + 0] + a[aShift + j3 + 1];
@@ -2079,100 +2142,137 @@ final class Fft {
     private static void cftf161(
         double[] a, int aShift, double[] w, int wShift
     ) {
-        double wn4r, wk1r, wk1i,
-            x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i,
-            y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i,
-            y4r, y4i, y5r, y5i, y6r, y6i, y7r, y7i,
-            y8r, y8i, y9r, y9i, y10r, y10i, y11r, y11i,
-            y12r, y12i, y13r, y13i, y14r, y14i, y15r, y15i;
-    
+        double wn4r;
+        double wk1r;
+        double wk1i;
+        double x0r;
+        double x0i;
+        double x1r;
+        double x1i;
+        double x2r;
+        double x2i;
+        double x3r;
+        double x3i;
+        double y0r;
+        double y0i;
+        double y1r;
+        double y1i;
+        double y2r;
+        double y2i;
+        double y3r;
+        double y3i;
+        double y4r;
+        double y4i;
+        double y5r;
+        double y5i;
+        double y6r;
+        double y6i;
+        double y7r;
+        double y7i;
+        double y8r;
+        double y8i;
+        double y9r;
+        double y9i;
+        double y10r;
+        double y10i;
+        double y11r;
+        double y11i;
+        double y12r;
+        double y12i;
+        double y13r;
+        double y13i;
+        double y14r;
+        double y14i;
+        double y15r;
+        double y15i;
+
         wn4r = w[wShift + 1];
         wk1r = w[wShift + 2];
         wk1i = w[wShift + 3];
-        x0r  = a[aShift + 0] + a[aShift + 16];
-        x0i  = a[aShift + 1] + a[aShift + 17];
-        x1r  = a[aShift + 0] - a[aShift + 16];
-        x1i  = a[aShift + 1] - a[aShift + 17];
-        x2r  = a[aShift + 8] + a[aShift + 24];
-        x2i  = a[aShift + 9] + a[aShift + 25];
-        x3r  = a[aShift + 8] - a[aShift + 24];
-        x3i  = a[aShift + 9] - a[aShift + 25];
-        y0r  = x0r + x2r;
-        y0i  = x0i + x2i;
-        y4r  = x0r - x2r;
-        y4i  = x0i - x2i;
-        y8r  = x1r - x3i;
-        y8i  = x1i + x3r;
+        x0r = a[aShift + 0] + a[aShift + 16];
+        x0i = a[aShift + 1] + a[aShift + 17];
+        x1r = a[aShift + 0] - a[aShift + 16];
+        x1i = a[aShift + 1] - a[aShift + 17];
+        x2r = a[aShift + 8] + a[aShift + 24];
+        x2i = a[aShift + 9] + a[aShift + 25];
+        x3r = a[aShift + 8] - a[aShift + 24];
+        x3i = a[aShift + 9] - a[aShift + 25];
+        y0r = x0r + x2r;
+        y0i = x0i + x2i;
+        y4r = x0r - x2r;
+        y4i = x0i - x2i;
+        y8r = x1r - x3i;
+        y8i = x1i + x3r;
         y12r = x1r + x3i;
         y12i = x1i - x3r;
-        x0r  = a[aShift + 2] + a[aShift + 18];
-        x0i  = a[aShift + 3] + a[aShift + 19];
-        x1r  = a[aShift + 2] - a[aShift + 18];
-        x1i  = a[aShift + 3] - a[aShift + 19];
-        x2r  = a[aShift + 10] + a[aShift + 26];
-        x2i  = a[aShift + 11] + a[aShift + 27];
-        x3r  = a[aShift + 10] - a[aShift + 26];
-        x3i  = a[aShift + 11] - a[aShift + 27];
-        y1r  = x0r + x2r;
-        y1i  = x0i + x2i;
-        y5r  = x0r - x2r;
-        y5i  = x0i - x2i;
-        x0r  = x1r - x3i;
-        x0i  = x1i + x3r;
-        y9r  = wk1r * x0r - wk1i * x0i;
-        y9i  = wk1r * x0i + wk1i * x0r;
-        x0r  = x1r + x3i;
-        x0i  = x1i - x3r;
+        x0r = a[aShift + 2] + a[aShift + 18];
+        x0i = a[aShift + 3] + a[aShift + 19];
+        x1r = a[aShift + 2] - a[aShift + 18];
+        x1i = a[aShift + 3] - a[aShift + 19];
+        x2r = a[aShift + 10] + a[aShift + 26];
+        x2i = a[aShift + 11] + a[aShift + 27];
+        x3r = a[aShift + 10] - a[aShift + 26];
+        x3i = a[aShift + 11] - a[aShift + 27];
+        y1r = x0r + x2r;
+        y1i = x0i + x2i;
+        y5r = x0r - x2r;
+        y5i = x0i - x2i;
+        x0r = x1r - x3i;
+        x0i = x1i + x3r;
+        y9r = wk1r * x0r - wk1i * x0i;
+        y9i = wk1r * x0i + wk1i * x0r;
+        x0r = x1r + x3i;
+        x0i = x1i - x3r;
         y13r = wk1i * x0r - wk1r * x0i;
         y13i = wk1i * x0i + wk1r * x0r;
-        x0r  = a[aShift + 4]  + a[aShift + 20];
-        x0i  = a[aShift + 5]  + a[aShift + 21];
-        x1r  = a[aShift + 4]  - a[aShift + 20];
-        x1i  = a[aShift + 5]  - a[aShift + 21];
-        x2r  = a[aShift + 12] + a[aShift + 28];
-        x2i  = a[aShift + 13] + a[aShift + 29];
-        x3r  = a[aShift + 12] - a[aShift + 28];
-        x3i  = a[aShift + 13] - a[aShift + 29];
-        y2r  = x0r + x2r;
-        y2i  = x0i + x2i;
-        y6r  = x0r - x2r;
-        y6i  = x0i - x2i;
-        x0r  = x1r - x3i;
-        x0i  = x1i + x3r;
+        x0r = a[aShift + 4] + a[aShift + 20];
+        x0i = a[aShift + 5] + a[aShift + 21];
+        x1r = a[aShift + 4] - a[aShift + 20];
+        x1i = a[aShift + 5] - a[aShift + 21];
+        x2r = a[aShift + 12] + a[aShift + 28];
+        x2i = a[aShift + 13] + a[aShift + 29];
+        x3r = a[aShift + 12] - a[aShift + 28];
+        x3i = a[aShift + 13] - a[aShift + 29];
+        y2r = x0r + x2r;
+        y2i = x0i + x2i;
+        y6r = x0r - x2r;
+        y6i = x0i - x2i;
+        x0r = x1r - x3i;
+        x0i = x1i + x3r;
         y10r = wn4r * (x0r - x0i);
         y10i = wn4r * (x0i + x0r);
-        x0r  = x1r + x3i;
-        x0i  = x1i - x3r;
+        x0r = x1r + x3i;
+        x0i = x1i - x3r;
         y14r = wn4r * (x0r + x0i);
         y14i = wn4r * (x0i - x0r);
-        x0r  = a[aShift + 6]  + a[aShift + 22];
-        x0i  = a[aShift + 7]  + a[aShift + 23];
-        x1r  = a[aShift + 6]  - a[aShift + 22];
-        x1i  = a[aShift + 7]  - a[aShift + 23];
-        x2r  = a[aShift + 14] + a[aShift + 30];
-        x2i  = a[aShift + 15] + a[aShift + 31];
-        x3r  = a[aShift + 14] - a[aShift + 30];
-        x3i  = a[aShift + 15] - a[aShift + 31];
-        y3r  = x0r + x2r;
-        y3i  = x0i + x2i;
-        y7r  = x0r - x2r;
-        y7i  = x0i - x2i;
-        x0r  = x1r - x3i;
-        x0i  = x1i + x3r;
+        x0r = a[aShift + 6] + a[aShift + 22];
+        x0i = a[aShift + 7] + a[aShift + 23];
+        x1r = a[aShift + 6] - a[aShift + 22];
+        x1i = a[aShift + 7] - a[aShift + 23];
+        x2r = a[aShift + 14] + a[aShift + 30];
+        x2i = a[aShift + 15] + a[aShift + 31];
+        x3r = a[aShift + 14] - a[aShift + 30];
+        x3i = a[aShift + 15] - a[aShift + 31];
+        y3r = x0r + x2r;
+        y3i = x0i + x2i;
+        y7r = x0r - x2r;
+        y7i = x0i - x2i;
+        x0r = x1r - x3i;
+        x0i = x1i + x3r;
         y11r = wk1i * x0r - wk1r * x0i;
         y11i = wk1i * x0i + wk1r * x0r;
-        x0r  = x1r + x3i;
-        x0i  = x1i - x3r;
+        x0r = x1r + x3i;
+        x0i = x1i - x3r;
         y15r = wk1r * x0r - wk1i * x0i;
         y15i = wk1r * x0i + wk1i * x0r;
-        x0r  = y12r - y14r;
-        x0i  = y12i - y14i;
-        x1r  = y12r + y14r;
-        x1i  = y12i + y14i;
-        x2r  = y13r - y15r;
-        x2i  = y13i - y15i;
-        x3r  = y13r + y15r;
-        x3i  = y13i + y15i;
+        x0r = y12r - y14r;
+        x0i = y12i - y14i;
+        x1r = y12r + y14r;
+        x1i = y12i + y14i;
+        x2r = y13r - y15r;
+        x2i = y13i - y15i;
+        x3r = y13r + y15r;
+        x3i = y13i + y15i;
         a[aShift + 24] = x0r + x2r;
         a[aShift + 25] = x0i + x2i;
         a[aShift + 26] = x0r - x2r;
@@ -2239,20 +2339,59 @@ final class Fft {
     private static void cftf162(
         double[] a, int aShift, double[] w, int wShift
     ) {
-        double wn4r, wk1r, wk1i, wk2r, wk2i, wk3r, wk3i,
-            x0r, x0i, x1r, x1i, x2r, x2i,
-            y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i,
-            y4r, y4i, y5r, y5i, y6r, y6i, y7r, y7i,
-            y8r, y8i, y9r, y9i, y10r, y10i, y11r, y11i,
-            y12r, y12i, y13r, y13i, y14r, y14i, y15r, y15i;
+        double wn4r;
+        double wk1r;
+        double wk1i;
+        double wk2r;
+        double wk2i;
+        double wk3r;
+        double wk3i;
+        double x0r;
+        double x0i;
+        double x1r;
+        double x1i;
+        double x2r;
+        double x2i;
+        double y0r;
+        double y0i;
+        double y1r;
+        double y1i;
+        double y2r;
+        double y2i;
+        double y3r;
+        double y3i;
+        double y4r;
+        double y4i;
+        double y5r;
+        double y5i;
+        double y6r;
+        double y6i;
+        double y7r;
+        double y7i;
+        double y8r;
+        double y8i;
+        double y9r;
+        double y9i;
+        double y10r;
+        double y10i;
+        double y11r;
+        double y11i;
+        double y12r;
+        double y12i;
+        double y13r;
+        double y13i;
+        double y14r;
+        double y14i;
+        double y15r;
+        double y15i;
 
-        wn4r =  w[wShift + 1];
-        wk1r =  w[wShift + 4];
-        wk1i =  w[wShift + 5];
-        wk3r =  w[wShift + 6];
+        wn4r = w[wShift + 1];
+        wk1r = w[wShift + 4];
+        wk1i = w[wShift + 5];
+        wk3r = w[wShift + 6];
         wk3i = -w[wShift + 7];
-        wk2r =  w[wShift + 8];
-        wk2i =  w[wShift + 9];
+        wk2r = w[wShift + 8];
+        wk2i = w[wShift + 9];
         x1r = a[aShift + 0] - a[aShift + 17];
         x1i = a[aShift + 1] + a[aShift + 16];
         x0r = a[aShift + 8] - a[aShift + 25];
@@ -2423,9 +2562,31 @@ final class Fft {
     private static void cftf081(
         double[] a, int aShift, double[] w, int wShift
     ) {
-        double wn4r, x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i,
-            y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i,
-            y4r, y4i, y5r, y5i, y6r, y6i, y7r, y7i;
+        double wn4r;
+        double x0r;
+        double x0i;
+        double x1r;
+        double x1i;
+        double x2r;
+        double x2i;
+        double x3r;
+        double x3i;
+        double y0r;
+        double y0i;
+        double y1r;
+        double y1i;
+        double y2r;
+        double y2i;
+        double y3r;
+        double y3i;
+        double y4r;
+        double y4i;
+        double y5r;
+        double y5i;
+        double y6r;
+        double y6i;
+        double y7r;
+        double y7i;
 
         wn4r = w[wShift + 1];
         x0r = a[aShift + 0] + a[aShift + 8];
@@ -2486,9 +2647,29 @@ final class Fft {
     private static void cftf082(
         double[] a, int aShift, double[] w, int wShift
     ) {
-        double wn4r, wk1r, wk1i, x0r, x0i, x1r, x1i,
-            y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i,
-            y4r, y4i, y5r, y5i, y6r, y6i, y7r, y7i;
+        double wn4r;
+        double wk1r;
+        double wk1i;
+        double x0r;
+        double x0i;
+        double x1r;
+        double x1i;
+        double y0r;
+        double y0i;
+        double y1r;
+        double y1i;
+        double y2r;
+        double y2i;
+        double y3r;
+        double y3i;
+        double y4r;
+        double y4i;
+        double y5r;
+        double y5i;
+        double y6r;
+        double y6i;
+        double y7r;
+        double y7i;
 
         wn4r = w[wShift + 1];
         wk1r = w[wShift + 2];
@@ -2557,16 +2738,14 @@ final class Fft {
 
 
     private static void cftf040(double[] a) {
-        double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i;
-    
-        x0r = a[0] + a[4];
-        x0i = a[1] + a[5];
-        x1r = a[0] - a[4];
-        x1i = a[1] - a[5];
-        x2r = a[2] + a[6];
-        x2i = a[3] + a[7];
-        x3r = a[2] - a[6];
-        x3i = a[3] - a[7];
+        final double x0r = a[0] + a[4];
+        final double x0i = a[1] + a[5];
+        final double x1r = a[0] - a[4];
+        final double x1i = a[1] - a[5];
+        final double x2r = a[2] + a[6];
+        final double x2i = a[3] + a[7];
+        final double x3r = a[2] - a[6];
+        final double x3i = a[3] - a[7];
         a[0] = x0r + x2r;
         a[1] = x0i + x2i;
         a[2] = x1r - x3i;
@@ -2579,16 +2758,14 @@ final class Fft {
 
 
     private static void cftb040(double[] a) {
-        double x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i;
-
-        x0r = a[0] + a[4];
-        x0i = a[1] + a[5];
-        x1r = a[0] - a[4];
-        x1i = a[1] - a[5];
-        x2r = a[2] + a[6];
-        x2i = a[3] + a[7];
-        x3r = a[2] - a[6];
-        x3i = a[3] - a[7];
+        final double x0r = a[0] + a[4];
+        final double x0i = a[1] + a[5];
+        final double x1r = a[0] - a[4];
+        final double x1i = a[1] - a[5];
+        final double x2r = a[2] + a[6];
+        final double x2i = a[3] + a[7];
+        final double x3r = a[2] - a[6];
+        final double x3i = a[3] - a[7];
         a[0] = x0r + x2r;
         a[1] = x0i + x2i;
         a[2] = x1r + x3i;
@@ -2601,10 +2778,8 @@ final class Fft {
 
 
     private static void cftx020(double[] a) {
-        double x0r, x0i;
-
-        x0r = a[0] - a[2];
-        x0i = a[1] - a[3];
+        final double x0r = a[0] - a[2];
+        final double x0i = a[1] - a[3];
         a[0] += a[2];
         a[1] += a[3];
         a[2] = x0r;
@@ -2615,21 +2790,19 @@ final class Fft {
     private static void rftfsub(
         int n, double[] a, int nc, double[] c, int cShift
     ) {
-        int j, k, kk, ks, m;
-        double wkr, wki, xr, xi, yr, yi;
-        
-        m = n >> 1;
-        ks = 2 * nc / m;
-        kk = 0;
-        for (j = 2; j < m; j += 2) {
-            k = n - j;
+        final int m = n >> 1;
+        final int ks = 2 * nc / m;
+
+        int kk = 0;
+        for (int j = 2; j < m; j += 2) {
+            final int k = n - j;
             kk += ks;
-            wkr = 0.5 - c[cShift + nc - kk];
-            wki =       c[cShift + kk];
-            xr = a[j + 0] - a[k + 0];
-            xi = a[j + 1] + a[k + 1];
-            yr = wkr * xr - wki * xi;
-            yi = wkr * xi + wki * xr;
+            final double wkr = 0.5 - c[cShift + nc - kk];
+            final double wki =       c[cShift + kk];
+            final double xr = a[j + 0] - a[k + 0];
+            final double xi = a[j + 1] + a[k + 1];
+            final double yr = wkr * xr - wki * xi;
+            final double yi = wkr * xi + wki * xr;
             a[j + 0] -= yr;
             a[j + 1] -= yi;
             a[k + 0] += yr;
@@ -2641,21 +2814,19 @@ final class Fft {
     private static void rftbsub(
         int n, double[] a, int nc, double[] c, int cShift
     ) {
-        int j, k, kk, ks, m;
-        double wkr, wki, xr, xi, yr, yi;
-        
-        m = n >> 1;
-        ks = 2 * nc / m;
-        kk = 0;
-        for (j = 2; j < m; j += 2) {
-            k = n - j;
+        final int m = n >> 1;
+        final int ks = 2 * nc / m;
+
+        int kk = 0;
+        for (int j = 2; j < m; j += 2) {
+            final int k = n - j;
             kk += ks;
-            wkr = 0.5 - c[cShift + nc - kk];
-            wki =       c[cShift + kk];
-            xr = a[j] - a[k];
-            xi = a[j + 1] + a[k + 1];
-            yr = wkr * xr + wki * xi;
-            yi = wkr * xi - wki * xr;
+            final double wkr = 0.5 - c[cShift + nc - kk];
+            final double wki =       c[cShift + kk];
+            final double xr = a[j] - a[k];
+            final double xi = a[j + 1] + a[k + 1];
+            final double yr = wkr * xr + wki * xi;
+            final double yi = wkr * xi - wki * xr;
             a[j] -= yr;
             a[j + 1] -= yi;
             a[k] += yr;
@@ -2664,42 +2835,40 @@ final class Fft {
     }
 
 
-    private static void dctsub(int n, double[] a, int nc, double[] c) {
-        int j, k, kk, ks, m;
-        double wkr, wki, xr;
-        
-        m = n >> 1;
-        ks = nc / n;
-        kk = 0;
-        for (j = 1; j < m; j++) {
-            k = n - j;
-            kk += ks;
-            wkr = c[kk] - c[nc - kk];
-            wki = c[kk] + c[nc - kk];
-            xr = wki * a[j] - wkr * a[k];
-            a[j] = wkr * a[j] + wki * a[k];
-            a[k] = xr;
-        }
-        a[m] *= c[0];
-    }
-
-
-    private static void dstsub(int n, double[] a, int nc, double[] c) {
-        int j, k, kk, ks, m;
-        double wkr, wki, xr;
-        
-        m = n >> 1;
-        ks = nc / n;
-        kk = 0;
-        for (j = 1; j < m; j++) {
-            k = n - j;
-            kk += ks;
-            wkr = c[kk] - c[nc - kk];
-            wki = c[kk] + c[nc - kk];
-            xr = wki * a[k] - wkr * a[j];
-            a[k] = wkr * a[k] + wki * a[j];
-            a[j] = xr;
-        }
-        a[m] *= c[0];
-    }
+    /*
+     * private static void dctsub(int n, double[] a, int nc, double[] c) {
+     *     final int m = n >> 1;
+     *     final int ks = nc / n;
+     *
+     *     int kk = 0;
+     *     for (int j = 1; j < m; j++) {
+     *         final int k = n - j;
+     *         kk += ks;
+     *         final double wkr = c[kk] - c[nc - kk];
+     *         final double wki = c[kk] + c[nc - kk];
+     *         final double xr = wki * a[j] - wkr * a[k];
+     *         a[j] = wkr * a[j] + wki * a[k];
+     *         a[k] = xr;
+     *     }
+     *     a[m] *= c[0];
+     * }
+     * 
+     *
+     * private static void dstsub(int n, double[] a, int nc, double[] c) {
+     *     final int m = n >> 1;
+     *     final int ks = nc / n;
+     * 
+     *     int kk = 0;
+     *     for (int j = 1; j < m; j++) {
+     *         final int k = n - j;
+     *         kk += ks;
+     *         final double wkr = c[kk] - c[nc - kk];
+     *         final double wki = c[kk] + c[nc - kk];
+     *         final double xr = wki * a[k] - wkr * a[j];
+     *         a[k] = wkr * a[k] + wki * a[j];
+     *         a[j] = xr;
+     *     }
+     *     a[m] *= c[0];
+     * }
+     */
 }

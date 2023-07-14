@@ -8,15 +8,26 @@ This is an independent Java port of WORLD vocoder (C++). <br>
 [WORLD - a high-quality speech analysis, manipulation and synthesis system](https://github.com/mmorise/World) <br>
 
 * JA-WORLD repository: https://gitlab.com/f-matano44/world-for-java
-* mirroring: https://github.com/f-matano44/world-for-java
+* mirror repository: https://github.com/f-matano44/world-for-java
 
 
 ## Development environment and tools
 * [Java 17 (LTS)](https://adoptium.net/temurin/releases/?version=17)
 * [ant 1.10](https://ant.apache.org/bindownload.cgi)
 * [VSCode](https://code.visualstudio.com/) + [Checkstyle for Java](https://marketplace.visualstudio.com/items?itemName=shengchen.vscode-checkstyle)
-* [chatGPT (GPT-4.0)](https://chat.openai.com/)
 
+Part of JA=WORLD' code and documents are generated using ChatGPT.
+
+
+## LICENSE
+Mozilla Public License 2.0
+
+### Included Source-code
+WORLD @ Modified-BSD License
+PyWORLD @ MIT License
+
+### test/vaiueo2d.wav
+Got permission to include file from Dr. Morise.
 
 ## Usage
 If you want to use some options, please read `test/TestApp.java`.
@@ -43,9 +54,9 @@ double[] y = Synthesis.getSignal(f0, sp, ap, fs);
 | Function | Maximum Difference |
 |-----------|------------|
 | Dio | 4.26e-13 |
-| StoneMask | 5.68e-14 |
-| CheapTrick | 4.81e-09 |
-| D4C | 5.00e-10 |
+| (Dio ->) StoneMask | 5.68e-14 |
+| (Dio -> StoneMask ->) CheapTrick | 4.81e-09 |
+| (Dio -> StoneMask ->) D4C | 5.00e-10 |
 
 
 ## Build (to build/ directory)
@@ -56,6 +67,6 @@ ja-world/$ ant
 
 ## Run test application
 ```SH
-ja-world/$ ant
+ja-world/$ ant buildTestCode
 ja-world/$ java -jar bin/TestApp.jar test/vaiueo2d.wav output.wav
 ```

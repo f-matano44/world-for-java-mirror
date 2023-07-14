@@ -1,5 +1,7 @@
 package jp.f_matano44.ja_world;
 
+import java.util.Arrays;
+
 /** 
  * F0 estimation based on DIO (Distributed Inline-filter Operation).
  */
@@ -74,15 +76,11 @@ public final class Dio {
         double[] f0 = f0_info[0];
         double[] temporal_positions = f0_info[1];
 
-        dioMain(x.clone(), x.length, fs, option, temporal_positions, f0);
+        dioGeneralBody(x.clone(), x.length, fs, option.frame_period,
+            option.f0_floor, option.f0_ceil, option.channels_in_octave,
+            option.speed, option.allowed_range, temporal_positions, f0);
 
         return f0_info;
-    }
-
-
-    // get f0_length
-    private static int getSamplesForDIO(int fs, int x_length, double frame_period) {
-        return (int) (1000.0 * x_length / fs / frame_period) + 1;
     }
 
 
@@ -144,7 +142,7 @@ public final class Dio {
     private static void getSpectrumForEstimation(
         final double[] x, int x_length, int y_length, 
         double actual_fs, int fft_size, int decimation_ratio,
-        /* fft_complex * */ double[][] y_spectrum
+        double[][] y_spectrum
     ) {
         // Initialization
         double[] y = new double[fft_size];
@@ -153,22 +151,13 @@ public final class Dio {
         if (decimation_ratio != 1) {
             MatlabFunctions.decimate(x, x_length, decimation_ratio, y);
         } else {
-            for (int i = 0; i < x_length; ++i) {
-                y[i] = x[i];
-            }
+            System.arraycopy(x, 0, y, 0, x_length);
         }
 
         // Removal of the DC component (y = y - mean value of y)
-        double mean_y = 0.0;
-        for (int i = 0; i < y_length; ++i) {
-            mean_y += y[i];
-        }
-        mean_y /= y_length;
+        double mean_y = Arrays.stream(y).limit(y_length).average().getAsDouble();
         for (int i = 0; i < y_length; ++i) {
             y[i] -= mean_y;
-        }
-        for (int i = y_length; i < fft_size; ++i) {
-            y[i] = 0.0;
         }
 
         Fft.Plan forwardFFT =
@@ -179,14 +168,13 @@ public final class Dio {
         int cutoff_in_sample = (int) Math.round(actual_fs / ConstantNumbers.kCutOff);
         designLowCutFilter(cutoff_in_sample * 2 + 1, fft_size, y);
 
-        /* fft_complex * */ double[][] filter_spectrum = new double[fft_size][2];
+        double[][] filter_spectrum = new double[fft_size][2];
         forwardFFT.c_out = filter_spectrum;
         Fft.fft_execute(forwardFFT);
 
-        double tmp = 0;
         for (int i = 0; i <= fft_size / 2; ++i) {
             // Complex number multiplications.
-            tmp = y_spectrum[i][0] * filter_spectrum[i][0]
+            final double tmp = y_spectrum[i][0] * filter_spectrum[i][0]
                 - y_spectrum[i][1] * filter_spectrum[i][1];
             y_spectrum[i][1] = y_spectrum[i][0] * filter_spectrum[i][1]
                 + y_spectrum[i][1] * filter_spectrum[i][0];
@@ -227,24 +215,16 @@ public final class Dio {
     ) {
         double[] f0_base = new double[f0_length];
         // Initialization
-        for (int i = 0; i < voice_range_minimum; ++i) {
-            f0_base[i] = 0.0;
-        }
         for (int i = voice_range_minimum; i < f0_length - voice_range_minimum; ++i) {
             f0_base[i] = best_f0_contour[i];
         }
-        for (int i = f0_length - voice_range_minimum; i < f0_length; ++i) {
-            f0_base[i] = 0.0;
-        }
 
         // Processing to prevent the jumping of f0
-        for (int i = 0; i < voice_range_minimum; ++i) {
-            f0_step1[i] = 0.0;
-        }
+        Arrays.fill(f0_step1, 0, voice_range_minimum, 0.0);
         for (int i = voice_range_minimum; i < f0_length; ++i) {
             f0_step1[i] = Math.abs((f0_base[i] - f0_base[i - 1])
-                / (ConstantNumbers.kMySafeGuardMinimum + f0_base[i]))
-                < allowed_range ? f0_base[i] : 0.0;
+                / (ConstantNumbers.kMySafeGuardMinimum + f0_base[i])) < allowed_range
+                ? f0_base[i] : 0.0;
         }
     }
 
@@ -256,9 +236,7 @@ public final class Dio {
     private static void fixStep2(
         final double[] f0_step1, int f0_length, int voice_range_minimum, double[] f0_step2
     ) {
-        for (int i = 0; i < f0_length; ++i) {
-            f0_step2[i] = f0_step1[i];
-        }
+        System.arraycopy(f0_step1, 0, f0_step2, 0, f0_length);
 
         int center = (voice_range_minimum - 1) / 2;
         for (int i = center; i < f0_length - center; ++i) {
@@ -303,9 +281,9 @@ public final class Dio {
         double minimum_error = Math.abs(reference_f0 - f0_candidates[0][target_index]);
         double best_f0 = f0_candidates[0][target_index];
 
-        double current_error;
         for (int i = 1; i < number_of_candidates; ++i) {
-            current_error = Math.abs(reference_f0 - f0_candidates[i][target_index]);
+            final double current_error =
+                Math.abs(reference_f0 - f0_candidates[i][target_index]);
             if (current_error < minimum_error) {
                 minimum_error = current_error;
                 best_f0 = f0_candidates[i][target_index];
@@ -329,17 +307,14 @@ public final class Dio {
         int number_of_candidates, double allowed_range, final int[] negative_index,
         int[] negative_count, double[] f0_step3
     ) {
-        for (int i = 0; i < f0_length; i++) {
-            f0_step3[i] = f0_step2[i];
-        }
+        System.arraycopy(f0_step2, 0, f0_step3, 0, f0_length);
 
-        int limit;
         for (int i = 0; i < negative_count[0]; ++i) {
-            limit = i == negative_count[0] - 1 ? f0_length - 1 : negative_index[i + 1];
+            final int limit =
+                (i == negative_count[0] - 1) ? f0_length - 1 : negative_index[i + 1];
             for (int j = negative_index[i]; j < limit; ++j) {
-                f0_step3[j + 1] =
-                    selectBestF0(f0_step3[j], f0_step3[j - 1], f0_candidates,
-                        number_of_candidates, j + 1, allowed_range);
+                f0_step3[j + 1] = selectBestF0(f0_step3[j], f0_step3[j - 1],
+                    f0_candidates, number_of_candidates, j + 1, allowed_range);
                 if (f0_step3[j + 1] == 0) {
                     break;
                 }
@@ -357,13 +332,10 @@ public final class Dio {
         int number_of_candidates, double allowed_range, final int[] positive_index,
         int[] positive_count, double[] f0_step4
     ) {
-        for (int i = 0; i < f0_length; ++i) {
-            f0_step4[i] = f0_step3[i];
-        }
+        System.arraycopy(f0_step3, 0, f0_step4, 0, f0_length);
 
-        int limit;
         for (int i = positive_count[0] - 1; i >= 0; --i) {
-            limit = i == 0 ? 1 : positive_index[i - 1];
+            final int limit = i == 0 ? 1 : positive_index[i - 1];
             for (int j = positive_index[i]; j > limit; --j) {
                 f0_step4[j - 1] =
                     selectBestF0(f0_step4[j], f0_step4[j + 1], f0_candidates,
@@ -385,7 +357,7 @@ public final class Dio {
         final double[] best_f0_contour, int f0_length, double f0_floor,
         double allowed_range, double[] fixed_f0_contour
     ) {
-        int voice_range_minimum =
+        final int voice_range_minimum =
             (int) (0.5 + 1000.0 / frame_period / f0_floor) * 2 + 1;
 
         if (f0_length <= voice_range_minimum) {
@@ -418,17 +390,14 @@ public final class Dio {
     // This function is only used in RawEventByDio()
     //-----------------------------------------------------------------------------
     private static void getFilteredSignal(int half_average_length, int fft_size,
-        final /* fft_complex * */ double[][] y_spectrum, int y_length, double[] filtered_signal
+        final double[][] y_spectrum, int y_length, double[] filtered_signal
     ) {
         double[] low_pass_filter = new double[fft_size];
         // Nuttall window is used as a low-pass filter.
         // Cutoff frequency depends on the window length.
         Common.nuttallWindow(half_average_length * 4, low_pass_filter);
-        for (int i = half_average_length * 4; i < fft_size; ++i) {
-            low_pass_filter[i] = 0.0;
-        }
 
-        /* fft_complex * */ double[][] low_pass_filter_spectrum = new double[fft_size][2];
+        double[][] low_pass_filter_spectrum = new double[fft_size][2];
         Fft.Plan forwardFFT = Fft.fft_plan_dft_r2c_1d(fft_size, low_pass_filter,
             low_pass_filter_spectrum, Fft.FFT_ESTIMATE);
         Fft.fft_execute(forwardFFT);
@@ -669,7 +638,7 @@ public final class Dio {
     private static void getF0CandidatesAndScores(final double[] boundary_f0_list,
         int number_of_bands, double actual_fs, int y_length,
         final double[] temporal_positions, int f0_length,
-        final /* fft_complex * */ double[][] y_spectrum, int fft_size, double f0_floor,
+        final double[][] y_spectrum, int fft_size, double f0_floor,
         double f0_ceil, double[][] raw_f0_candidates, double[][] raw_f0_scores
     ) {
         double[] f0_candidate = new double[f0_length];
@@ -707,7 +676,7 @@ public final class Dio {
         }
 
         // normalization
-        int decimation_ratio = Common.myMaxInt(Common.myMinInt(speed, 12), 1);
+        int decimation_ratio = Common.clamp(speed, 1, 12);
         int y_length = (1 + (int) (x_length / decimation_ratio));
         double actual_fs = (double) (fs) / decimation_ratio;
         int fft_size = Common.getSuitableFFTSize(
@@ -715,7 +684,7 @@ public final class Dio {
             + 1 + (4 * (int) (1.0 + actual_fs / boundary_f0_list[0] / 2.0)));
 
         // Calculation of the spectrum used for the f0 estimation
-        /* fft_complex * */ double[][] y_spectrum = new double[fft_size][2];
+        double[][] y_spectrum = new double[fft_size][2];
         getSpectrumForEstimation(x, x_length, y_length, actual_fs, fft_size,
             decimation_ratio, y_spectrum);
 
@@ -742,13 +711,8 @@ public final class Dio {
             best_f0_contour, f0_length, f0_floor, allowed_range, f0);
     }
 
-
-    private static void dioMain(
-        final double[] x, int x_length, int fs, final Dio.Option option,
-        double[] temporal_positions, double[] f0
-    ) {
-        dioGeneralBody(x, x_length, fs, option.frame_period, option.f0_floor,
-            option.f0_ceil, option.channels_in_octave, option.speed,
-            option.allowed_range, temporal_positions, f0);
+    // get f0_length
+    private static int getSamplesForDIO(int fs, int x_length, double frame_period) {
+        return (int) (1000.0 * x_length / fs / frame_period) + 1;
     }
 }
