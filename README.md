@@ -8,7 +8,7 @@ This is an independent Java port of WORLD vocoder (C++). <br>
 [WORLD - a high-quality speech analysis, manipulation and synthesis system](https://github.com/mmorise/World) <br>
 
 * JA-WORLD repository: https://gitlab.com/f-matano44/world-for-java
-* mirror repository: https://github.com/f-matano44/world-for-java
+* mirror repository: https://github.com/f-matano44/world-for-java-mirror
 
 
 ## Development environment and tools
